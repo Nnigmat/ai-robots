@@ -1,0 +1,28 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://enteties/Camera.tscn" type="PackedScene" id=1]
+[ext_resource path="res://enteties/Canvas.tscn" type="PackedScene" id=2]
+[ext_resource path="res://scripts/Moveble.gd" type="Script" id=3]
+
+[sub_resource type="SphereMesh" id=1]
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_color = Color( 0.956863, 0.882353, 0.0823529, 1 )
+
+[node name="Game" type="Spatial"]
+
+[node name="Canvas" parent="." instance=ExtResource( 2 )]
+width = 128
+height = 128
+
+[node name="Spatial" parent="." instance=ExtResource( 1 )]
+transform = Transform( 1.19249e-08, 1, 1.62921e-07, 0, -1.62921e-07, 1, 1, -1.19249e-08, -1.94282e-15, 0, 43.2687, 0 )
+far = 8192.0
+distance = 2000.0
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 1, 0 )
+mesh = SubResource( 1 )
+material/0 = SubResource( 2 )
+script = ExtResource( 3 )
+STEP = 2

@@ -1,0 +1,24 @@
+[gd_scene format=2]
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 1.948
+margin_top = 1.948
+margin_right = 957.948
+margin_bottom = 121.948
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 718.0
+margin_top = 5.0
+margin_right = -1190.0
+margin_bottom = -673.0
+rect_scale = Vector2( 4, 4 )
+text = "Hello"
+align = 1
+valign = 1

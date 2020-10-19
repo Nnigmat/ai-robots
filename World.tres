@@ -1,0 +1,9 @@
+[gd_resource type="World" load_steps=3 format=2]
+
+[sub_resource type="Environment" id=1]
+
+[sub_resource type="Environment" id=2]
+
+[resource]
+environment = SubResource( 1 )
+fallback_environment = SubResource( 2 )

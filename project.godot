@@ -16,7 +16,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Simulator"
-run/main_scene="res://scenes/6_MultipleRobotsGeneration.tscn"
+run/main_scene="res://scenes/7_AddSecondCamera.tscn"
 config/icon="res://icon.png"
 
 [input]

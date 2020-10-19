@@ -1,9 +1,10 @@
 [gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://enteties/Camera.tscn" type="PackedScene" id=1]
-[ext_resource path="res://enteties/Robot.tscn" type="PackedScene" id=2]
-[ext_resource path="res://enteties/Canvas.tscn" type="PackedScene" id=3]
-[ext_resource path="res://enteties/Brush.tscn" type="PackedScene" id=4]
+[ext_resource path="res://entities/Camera.tscn" type="PackedScene" id=1]
+[ext_resource path="res://entities/Robot.tscn" type="PackedScene" id=2]
+[ext_resource path="res://entities/Canvas.tscn" type="PackedScene" id=3]
+[ext_resource path="res://entities/Brush.tscn" type="PackedScene" id=4]
+
 
 [sub_resource type="PlaneMesh" id=1]
 

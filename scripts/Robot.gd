@@ -1,5 +1,8 @@
 extends MeshInstance
 
+signal done()
+
+
 export var INPUT_DELAY: float = 0.4
 export var STEP = 1
 export var can_input: bool = true
@@ -7,12 +10,14 @@ export var line_order: int = 0
 export var robots_amount: int = 4
 export var draw_polylines: bool = true
 
-var direction: Vector3 = Vector3(1, 2, 1)
+var direction: Vector3 = Vector3(1, 3, 1)
 var current_delay: float = 0.0
 var polylines = []
 var polyline = []
-var target: Vector3 = Vector3(1, 2, 1)
+var target: Vector3 = Vector3(1, 3, 1)
 var polyline_start = true
+var emitted_done = false
+var can_emmit = false
 
 func _process(delta):	
 	_user_move()
@@ -63,6 +68,10 @@ func _move():
 		var cell = polyline.pop_back()
 		target = Vector3(cell.x, 2, cell.y)
 	
+	if len(polylines) == 0 and _near_target() and not emitted_done and can_emmit: 
+		emitted_done = true
+		emit_signal("done")
+	
 	var shift = Vector3(0, 0, 0)
 	
 	if target.x < direction.x:
@@ -80,7 +89,10 @@ func _move():
 	
 func _on_ImageProcessor_pass_data(data):
 	var tmp = []
-	for i in range(len(data) / 4 * line_order, len(data) / 4 * (line_order + 1)):
+	for i in range(len(data) / robots_amount * line_order, len(data) / robots_amount * (line_order + 1)):
 		tmp.append(data[i])
 	polylines = tmp
 	
+
+func _on_Timer_timeout():
+	can_emmit = true

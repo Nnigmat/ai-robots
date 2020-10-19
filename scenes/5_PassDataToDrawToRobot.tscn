@@ -1,11 +1,12 @@
 [gd_scene load_steps=9 format=2]
 
-[ext_resource path="res://enteties/Camera.tscn" type="PackedScene" id=1]
-[ext_resource path="res://enteties/Robot.tscn" type="PackedScene" id=2]
-[ext_resource path="res://enteties/Canvas.tscn" type="PackedScene" id=3]
-[ext_resource path="res://scripts/ImageProcessor.gd" type="Script" id=4]
-[ext_resource path="res://enteties/Progress.tscn" type="PackedScene" id=5]
-[ext_resource path="res://enteties/Brush.tscn" type="PackedScene" id=6]
+[ext_resource path="res://entities/Camera.tscn" type="PackedScene" id=1]
+[ext_resource path="res://entities/Robot.tscn" type="PackedScene" id=2]
+[ext_resource path="res://entities/Canvas.tscn" type="PackedScene" id=3]
+[ext_resource path="res://scenes/scripts/ImageProcessor.gd" type="Script" id=4]
+[ext_resource path="res://entities/Progress.tscn" type="PackedScene" id=5]
+[ext_resource path="res://entities/Brush.tscn" type="PackedScene" id=6]
+
 
 [sub_resource type="PlaneMesh" id=1]
 
@@ -76,7 +77,7 @@ transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 1, 0 )
 stroke_width = 6.0
 stroke_shape = SubResource( 1 )
 stroke_flow = 0.0
-[connection signal="pass_data" from="ImageProcessor" to="Robot3" method="_on_ImageProcessor_pass_data"]
 [connection signal="pass_data" from="ImageProcessor" to="Robot4" method="_on_ImageProcessor_pass_data"]
 [connection signal="pass_data" from="ImageProcessor" to="Robot2" method="_on_ImageProcessor_pass_data"]
+[connection signal="pass_data" from="ImageProcessor" to="Robot3" method="_on_ImageProcessor_pass_data"]
 [connection signal="pass_data" from="ImageProcessor" to="Robot" method="_on_ImageProcessor_pass_data"]

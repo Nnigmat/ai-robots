@@ -3,13 +3,13 @@ extends MeshInstance
 signal done()
 signal collide()
 
-
 export var INPUT_DELAY: float = 0.4
 export var STEP = 1
 export var can_input: bool = true
 export var line_order: int = 0
 export var robots_amount: int = 4
 export var draw_polylines: bool = true
+export var initial_position: Vector3 = Vector3(1, 3, 1)
 
 var direction: Vector3 = Vector3(1, 3, 1)
 var current_delay: float = 0.0
@@ -20,7 +20,19 @@ var polyline_start = true
 var emitted_done = false
 var can_emmit = false
 
-func _process(delta):	
+
+func _ready():
+	
+	var location = get_global_transform()
+	var new_origin = initial_position + location.origin
+	location.origin = new_origin
+	set_global_transform(location)
+	
+	direction = new_origin
+	target = new_origin
+
+
+func _process(delta):
 	_user_move()
 	_move()
 
@@ -28,7 +40,8 @@ func _process(delta):
 	var player_loc = get_global_transform()
 	player_loc.origin = player_loc.origin.linear_interpolate(direction, delta * 4)
 	set_global_transform(player_loc)
-	
+
+
 func _user_move():
 	if not can_input:
 		return
@@ -46,10 +59,12 @@ func _user_move():
 			$Brush.turn_off()
 		else:
 			$Brush.turn_on()
-		
+
+
 func _near_target():
 	return abs(direction.x - target.x) <= STEP and abs(direction.z - target.z) <= STEP
-	
+
+
 func _move():
 	if not draw_polylines:
 		return 
@@ -86,14 +101,14 @@ func _move():
 		shift.z = STEP
 	
 	direction += shift
-		
-	
+
+
 func _on_ImageProcessor_pass_data(data):
 	var tmp = []
 	for i in range(len(data) / robots_amount * line_order, len(data) / robots_amount * (line_order + 1)):
 		tmp.append(data[i])
 	polylines = tmp
-	
+
 
 func _on_Timer_timeout():
 	can_emmit = true

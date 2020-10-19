@@ -1,6 +1,7 @@
 extends MeshInstance
 
 signal done()
+signal collide()
 
 
 export var INPUT_DELAY: float = 0.4
@@ -96,3 +97,7 @@ func _on_ImageProcessor_pass_data(data):
 
 func _on_Timer_timeout():
 	can_emmit = true
+
+
+func _on_Area_area_exited(area):
+	emit_signal("collide")

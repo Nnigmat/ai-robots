@@ -1,9 +1,33 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://scripts/RobotGenerator.gd" type="Script" id=1]
 [ext_resource path="res://entities/ImageProcessor.tscn" type="PackedScene" id=2]
+[ext_resource path="res://other/font.tres" type="DynamicFont" id=3]
 
 [node name="RobotGenerator" type="Spatial"]
 script = ExtResource( 1 )
 
 [node name="ImageProcessor" parent="." instance=ExtResource( 2 )]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+offset = Vector2( 520, 2 )
+transform = Transform2D( 1, 0, 0, 1, 520, 2 )
+
+[node name="Collisions" type="Label" parent="CanvasLayer"]
+margin_right = 40.0
+margin_bottom = 14.0
+custom_fonts/font = ExtResource( 3 )
+text = "Collisions: "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Done" type="Label" parent="CanvasLayer"]
+margin_top = 47.0385
+margin_right = 78.0
+margin_bottom = 88.0385
+custom_fonts/font = ExtResource( 3 )
+text = "Done: "
+__meta__ = {
+"_edit_use_anchors_": false
+}

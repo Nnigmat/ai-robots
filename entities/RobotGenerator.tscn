@@ -75,7 +75,7 @@ offset = Vector2( 1352.98, 340.221 )
 [node name="OriginalImage" type="CanvasLayer" parent="."]
 
 [node name="Sprite" type="Sprite" parent="OriginalImage"]
-position = Vector2( 259.865, 1278.77 )
+position = Vector2( 256.992, 1275.3 )
 texture = ExtResource( 4 )
 [connection signal="pass_image" from="ImageProcessor" to="." method="_on_ImageProcessor_pass_image"]
 [connection signal="pressed" from="Info/Button" to="." method="_on_Button_pressed"]

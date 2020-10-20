@@ -1,6 +1,7 @@
 extends Spatial
 
 signal pass_data()
+signal pass_image()
 
 export var scale_factor = 1
 export var ON = true
@@ -15,11 +16,14 @@ func _on_Timer_timeout():
 	if not ON:
 		return 
 		
-	OS.execute('python', ['/home/nnigmat/Code/University/Thesis/project/linedraw/linedraw.py', '--show-lines', '--rm-logs','--export-svg'], true, inp)
+	print(OS.get_executable_path())
+	OS.execute('python', ['/home/nnigmat/Code/University/Thesis/project/linedraw/linedraw.py', '--show-lines', '--rm-logs',  '-o', '/home/nnigmat/Code/University/Thesis/Simulator/other/output.svg'], true, inp)
 #	OS.execute('python3', ['../project/main.py'], true, arr)
 #	OS.execute('ls', ['-al'], true, arr)
-
+	
+	
 	var data = JSON.parse(inp[0]).get_result()['data']
+	
 	var res = []
 #
 	var cos4 = cos(PI / 2)
@@ -34,4 +38,4 @@ func _on_Timer_timeout():
 			res[-1].append(Vector2((new_x + canvas_size) * scale_factor, new_y * scale_factor))
 
 	emit_signal("pass_data", res)
-
+	emit_signal("pass_image", 'res://other/output.svg')

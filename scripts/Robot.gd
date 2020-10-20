@@ -19,9 +19,17 @@ var target: Vector3 = Vector3(1, 3, 1)
 var polyline_start = true
 var emitted_done = false
 var can_emmit = false
+var material = null
 
+func hide():
+	visible = false
+	
+func show():
+	visible = true
 
 func _ready():
+	material = SpatialMaterial.new()
+	set_material_override(material)
 	
 	var location = get_global_transform()
 	var new_origin = initial_position + location.origin
@@ -66,13 +74,13 @@ func _near_target():
 
 
 func _move():
-	if not draw_polylines:
+	if not draw_polylines or emitted_done:
 		return 
 		
 	if len(polylines) != 0 and len(polyline) == 0 and _near_target():
 		polyline = polylines.pop_back()
 		polyline_start = true
-		$Brush.turn_off()
+		_turn_off_brush()
 	
 	if len(polyline) != 0 and _near_target() and polyline_start:
 		var cell = polyline.pop_back()
@@ -80,13 +88,15 @@ func _move():
 		polyline_start = false
 		
 	if len(polyline) != 0 and _near_target() and not polyline_start:
-		$Brush.turn_on()
 		var cell = polyline.pop_back()
 		target = Vector3(cell.x, 2, cell.y)
+		_turn_on_brush()
 	
-	if len(polylines) == 0 and _near_target() and not emitted_done and can_emmit: 
+	if len(polylines) == 0 and _near_target() and can_emmit: 
 		emitted_done = true
 		emit_signal("done")
+		_turn_off_brush()
+		material.albedo_color = Color(0, 1, 0)
 	
 	var shift = Vector3(0, 0, 0)
 	
@@ -107,8 +117,16 @@ func _on_ImageProcessor_pass_data(data):
 	var tmp = []
 	for i in range(len(data) / robots_amount * line_order, len(data) / robots_amount * (line_order + 1)):
 		tmp.append(data[i])
+
 	polylines = tmp
 
+func _turn_on_brush():
+	$Brush.turn_on()
+	material.albedo_color = Color(1, 0, 0)
+	
+func _turn_off_brush():
+	$Brush.turn_off()
+	material.albedo_color = Color(1, 1, 1)
 
 func _on_Timer_timeout():
 	can_emmit = true

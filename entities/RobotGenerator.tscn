@@ -1,19 +1,20 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://scripts/RobotGenerator.gd" type="Script" id=1]
 [ext_resource path="res://entities/ImageProcessor.tscn" type="PackedScene" id=2]
 [ext_resource path="res://other/font.tres" type="DynamicFont" id=3]
+[ext_resource path="res://other/lenna.png" type="Texture" id=4]
 
 [node name="RobotGenerator" type="Spatial"]
 script = ExtResource( 1 )
 
 [node name="ImageProcessor" parent="." instance=ExtResource( 2 )]
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="Info" type="CanvasLayer" parent="."]
 offset = Vector2( 520, 2 )
 transform = Transform2D( 1, 0, 0, 1, 520, 2 )
 
-[node name="Collisions" type="Label" parent="CanvasLayer"]
+[node name="Collisions" type="Label" parent="Info"]
 margin_right = 40.0
 margin_bottom = 14.0
 custom_fonts/font = ExtResource( 3 )
@@ -22,7 +23,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Done" type="Label" parent="CanvasLayer"]
+[node name="Done" type="Label" parent="Info"]
 margin_top = 47.0385
 margin_right = 78.0
 margin_bottom = 88.0385
@@ -32,7 +33,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Paint" type="Label" parent="CanvasLayer"]
+[node name="Paint" type="Label" parent="Info"]
 margin_top = 90.0031
 margin_right = 96.0
 margin_bottom = 131.003
@@ -41,3 +42,40 @@ text = "Paints:"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="Button" type="Button" parent="Info"]
+margin_left = 1.77826
+margin_top = 152.955
+margin_right = 207.778
+margin_bottom = 211.955
+custom_fonts/font = ExtResource( 3 )
+text = "Hide Robots"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ProcessedImage" type="CanvasLayer" parent="."]
+offset = Vector2( 245, 765 )
+transform = Transform2D( 1, 0, 0, 1, 245, 765 )
+
+[node name="ColorRect" type="ColorRect" parent="ProcessedImage"]
+margin_left = -245.0
+margin_top = -256.0
+margin_right = 267.0
+margin_bottom = 256.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Sprite" type="Sprite" parent="ProcessedImage"]
+show_behind_parent = true
+position = Vector2( -1352.98, -340.221 )
+offset = Vector2( 1352.98, 340.221 )
+
+[node name="OriginalImage" type="CanvasLayer" parent="."]
+
+[node name="Sprite" type="Sprite" parent="OriginalImage"]
+position = Vector2( 259.865, 1278.77 )
+texture = ExtResource( 4 )
+[connection signal="pass_image" from="ImageProcessor" to="." method="_on_ImageProcessor_pass_image"]
+[connection signal="pressed" from="Info/Button" to="." method="_on_Button_pressed"]

@@ -9,11 +9,12 @@ export var ROBOTS_PER_ROW: int = 10
 var done_robots = 0
 var collisions = 0
 var paints = 0
+var to_hide = true
 
 func _ready():
-	$CanvasLayer/Done.text = 'Done: ' + str(done_robots) + ' / ' + str(AMOUNT)
-	$CanvasLayer/Collisions.text = 'Collisions: ' + str(collisions / 2)
-	$CanvasLayer/Paint.text = 'Paints: ' + str(paints)
+	$Info/Done.text = 'Done: ' + str(done_robots) + ' / ' + str(AMOUNT)
+	$Info/Collisions.text = 'Collisions: ' + str(collisions / 2)
+	$Info/Paint.text = 'Paints: ' + str(paints)
 	
 	for i in range(AMOUNT / ROBOTS_PER_ROW):
 		for j in range(ROBOTS_PER_ROW):
@@ -29,7 +30,9 @@ func _ready():
 			robot.add_child(brush)
 			robot.robots_amount = AMOUNT
 			robot.line_order = i * ROBOTS_PER_ROW + j
+			print(i * ROBOTS_PER_ROW + j)
 			robot.initial_position = Vector3(- i * 100, 3, j*100)
+			robot.set_name('Robot' + str(i))
 
 			robot.connect("done", self, "_on_robot_done")
 			robot.connect("collide", self, "_on_robot_collide")
@@ -37,14 +40,35 @@ func _ready():
 	
 			add_child(robot)
 
+
 func _on_robot_done():
 	done_robots += 1
-	$CanvasLayer/Done.text = 'Done: ' + str(done_robots) + ' / ' + str(AMOUNT)
+	$Info/Done.text = 'Done: ' + str(done_robots) + ' / ' + str(AMOUNT)
+
 
 func _on_robot_collide():
 	collisions += 1
-	$CanvasLayer/Collisions.text = 'Collisions: ' + str(collisions / 2)
+	$Info/Collisions.text = 'Collisions: ' + str(collisions / 2)
+
 
 func _on_paint_painted():
 	paints += 1
-	$CanvasLayer/Paint.text = 'Paints: ' + str(paints)
+	$Info/Paint.text = 'Paints: ' + str(paints)
+
+
+func _on_Button_pressed(): 
+	for child in get_children():
+		if not 'Robot' in child.get_name():
+			continue
+			
+		if to_hide:
+			child.hide()
+		else:
+			child.show()
+			
+	to_hide = not to_hide
+
+
+func _on_ImageProcessor_pass_image(path):
+	var image = load(path)
+	$ProcessedImage/Sprite.texture = image

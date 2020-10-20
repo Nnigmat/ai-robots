@@ -31,3 +31,13 @@ text = "Done: "
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="Paint" type="Label" parent="CanvasLayer"]
+margin_top = 90.0031
+margin_right = 96.0
+margin_bottom = 131.003
+custom_fonts/font = ExtResource( 3 )
+text = "Paints:"
+__meta__ = {
+"_edit_use_anchors_": false
+}

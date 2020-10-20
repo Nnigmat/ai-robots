@@ -16,9 +16,9 @@ func _ready():
 	$Info/Collisions.text = 'Collisions: ' + str(collisions / 2)
 	$Info/Paint.text = 'Paints: ' + str(paints)
 	
-	for i in range(AMOUNT / ROBOTS_PER_ROW):
+	for i in range(AMOUNT / ROBOTS_PER_ROW + 1):
 		for j in range(ROBOTS_PER_ROW):
-			if i * ROBOTS_PER_ROW + j > AMOUNT:
+			if i * ROBOTS_PER_ROW + j >= AMOUNT:
 				continue
 				
 			var robot = Robot.instance()

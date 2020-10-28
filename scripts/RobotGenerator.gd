@@ -5,6 +5,8 @@ const Brush = preload("res://entities/Brush.tscn")
 
 export var AMOUNT: int = 4
 export var ROBOTS_PER_ROW: int = 10 
+export var STROKE_FLOW: float = 0.2
+export var ROBOT_SPEED: int = 4
 
 var done_robots = 0
 var collisions = 0
@@ -24,13 +26,14 @@ func _ready():
 			var robot = Robot.instance()
 			var brush = Brush.instance()
 			
+			brush.stroke_flow = STROKE_FLOW
 			brush.turn_off()
 			brush.connect("painted", self, "_on_paint_painted")
 			
 			robot.add_child(brush)
 			robot.robots_amount = AMOUNT
+			robot.STEP = ROBOT_SPEED
 			robot.line_order = i * ROBOTS_PER_ROW + j
-			print(i * ROBOTS_PER_ROW + j)
 			robot.initial_position = Vector3(- i * 100, 3, j*100)
 			robot.set_name('Robot' + str(i))
 

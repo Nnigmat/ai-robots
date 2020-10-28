@@ -4,6 +4,8 @@ signal done()
 signal collide()
 
 export var INPUT_DELAY: float = 0.4
+
+# The bigger STEP, the faster algo working, but it loses quality, due not reaching the cell fully
 export var STEP = 1
 export var can_input: bool = true
 export var line_order: int = 0
@@ -115,7 +117,7 @@ func _move():
 
 func _on_ImageProcessor_pass_data(data):
 	var tmp = []
-	for i in range(len(data) / robots_amount * line_order, len(data) / robots_amount * (line_order + 1)):
+	for i in range(int(float(len(data)) / robots_amount * line_order), int(float(len(data)) / robots_amount * (line_order + 1))):
 		tmp.append(data[i])
 
 	polylines = tmp

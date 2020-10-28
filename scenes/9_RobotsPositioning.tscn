@@ -21,4 +21,4 @@ show_lines = false
 [node name="MiniCamera" parent="." instance=ExtResource( 5 )]
 
 [node name="RobotGenerator" parent="." instance=ExtResource( 3 )]
-AMOUNT = 21
+AMOUNT = 40

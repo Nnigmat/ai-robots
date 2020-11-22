@@ -13,6 +13,8 @@ export var draw_polylines: bool = true
 export var initial_position: Vector3 = Vector3(1, 3, 1)
 export var direction: Vector3 = Vector3(1, 3, 1)
 export var INPUT_DELAY: float = 0.4
+export var COLLISION_TYPE: String = Globals.NO_AVOIDANCE
+
 
 var current_delay: float = 0.0
 var polylines = []
@@ -32,6 +34,32 @@ func hide():
 	
 func show():
 	visible = true
+
+
+func _check_state():
+	if not draw_polylines or emitted_done:
+		return 
+		
+	if len(polylines) != 0 and len(polyline) == 0 and _near_target():
+		polyline = polylines.pop_back()
+		polyline_start = true
+		_turn_off_brush()
+	
+	if len(polyline) != 0 and _near_target() and polyline_start:
+		var cell = polyline.pop_back()
+		target = Vector3(cell.x, 2, cell.y)
+		polyline_start = false
+		
+	if len(polyline) != 0 and _near_target() and not polyline_start:
+		var cell = polyline.pop_back()
+		target = Vector3(cell.x, 2, cell.y)
+		_turn_on_brush()
+	
+	if len(polylines) == 0 and _near_target() and can_emmit: 
+		emitted_done = true
+		emit_signal("done")
+		_turn_off_brush()
+		material.albedo_color = Color(0, 1, 0)
 
 
 func get_average():
@@ -61,7 +89,8 @@ func _ready():
 
 
 func _process(delta):
-	_user_move()
+#	_user_move()
+	_check_state()
 	_move()
 
 	# Apply movement
@@ -94,45 +123,15 @@ func _near_target():
 
 
 func _move():
-	if not draw_polylines or emitted_done:
-		return 
-		
-	if len(polylines) != 0 and len(polyline) == 0 and _near_target():
-		polyline = polylines.pop_back()
-		polyline_start = true
-		_turn_off_brush()
+	var params = {
+		'type': COLLISION_TYPE, 
+		'location': direction, 
+		'target': target, 
+		'speed': STEP
+	}
+	direction += Motion.move(params)
 	
-	if len(polyline) != 0 and _near_target() and polyline_start:
-		var cell = polyline.pop_back()
-		target = Vector3(cell.x, 2, cell.y)
-		polyline_start = false
-		
-	if len(polyline) != 0 and _near_target() and not polyline_start:
-		var cell = polyline.pop_back()
-		target = Vector3(cell.x, 2, cell.y)
-		_turn_on_brush()
-	
-	if len(polylines) == 0 and _near_target() and can_emmit: 
-		emitted_done = true
-		emit_signal("done")
-		_turn_off_brush()
-		material.albedo_color = Color(0, 1, 0)
-	
-	var shift = Vector3(0, 0, 0)
-	
-	if target.x < direction.x:
-		shift.x = -STEP
-	elif target.x > direction.x:
-		shift.x = STEP
-	
-	if target.z < direction.z:
-		shift.z = -STEP
-	elif target.z > direction.z:
-		shift.z = STEP
-	
-	direction += shift
-	direction -= get_average() * STEP * -1
-
+# Signals
 
 func _on_ImageProcessor_pass_data(data):
 	var tmp = [[Vector2(init_origin.x, init_origin.z)]]

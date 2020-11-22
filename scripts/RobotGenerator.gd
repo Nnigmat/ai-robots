@@ -7,6 +7,7 @@ export var AMOUNT: int = 4
 export var ROBOTS_PER_ROW: int = 10 
 export var STROKE_FLOW: float = 0.2
 export var ROBOT_SPEED: int = 4
+export(String, "No avoidance") var COLLISION_TYPE = Globals.NO_AVOIDANCE
 
 var done_robots = 0
 var collisions = 0
@@ -31,11 +32,12 @@ func _ready():
 			brush.connect("painted", self, "_on_paint_painted")
 			
 			robot.add_child(brush)
+			robot.COLLISION_TYPE = COLLISION_TYPE
 			robot.robots_amount = AMOUNT
 			robot.STEP = ROBOT_SPEED
 			robot.line_order = i * ROBOTS_PER_ROW + j
 			robot.initial_position = Vector3(- i * 100, 3, j*100)
-			robot.set_name('Robot' + str(i))
+			robot.set_name('Robot ' + str(i))
 
 			robot.connect("done", self, "_on_robot_done")
 			robot.connect("collide", self, "_on_robot_collide")

@@ -16,8 +16,13 @@ _global_script_class_icons={
 [application]
 
 config/name="Simulator"
-run/main_scene="res://scenes/9_RobotsPositioning.tscn"
+run/main_scene="res://scenes/10_CollisionAvoidanceModule.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+Globals="*res://scripts/Globals.gd"
+Motion="*res://scripts/Motion.gd"
 
 [input]
 

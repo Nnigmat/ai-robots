@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://entities/Canvas.tscn" type="PackedScene" id=2]
+[ext_resource path="res://entities/RobotGenerator.tscn" type="PackedScene" id=3]
+[ext_resource path="res://entities/Camera.tscn" type="PackedScene" id=4]
+[ext_resource path="res://entities/MiniCamera.tscn" type="PackedScene" id=5]
+
+[node name="Game" type="Spatial"]
+
+[node name="Spatial" parent="." instance=ExtResource( 4 )]
+transform = Transform( -1.62921e-07, 0.707107, -0.707107, 0, 0.707107, 0.707107, 1, 1.15203e-07, -1.15203e-07, -341.131, 1000, 1024 )
+far = 8192.0
+distance = 2000.0
+max_speed = Vector3( 100, 100, 100 )
+
+[node name="Canvas" parent="." instance=ExtResource( 2 )]
+width = 1024
+height = 1024
+show_lines = false
+
+[node name="MiniCamera" parent="." instance=ExtResource( 5 )]
+
+[node name="RobotGenerator" parent="." instance=ExtResource( 3 )]
+ROBOTS_PER_ROW = 20
+STROKE_FLOW = 0.05

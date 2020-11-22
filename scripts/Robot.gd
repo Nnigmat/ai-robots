@@ -3,7 +3,6 @@ extends MeshInstance
 signal done()
 signal collide()
 
-export var INPUT_DELAY: float = 0.4
 
 # The bigger STEP, the faster algo working, but it loses quality, due not reaching the cell fully
 export var STEP = 1
@@ -12,8 +11,9 @@ export var line_order: int = 0
 export var robots_amount: int = 4
 export var draw_polylines: bool = true
 export var initial_position: Vector3 = Vector3(1, 3, 1)
+export var direction: Vector3 = Vector3(1, 3, 1)
+export var INPUT_DELAY: float = 0.4
 
-var direction: Vector3 = Vector3(1, 3, 1)
 var current_delay: float = 0.0
 var polylines = []
 var polyline = []
@@ -22,24 +22,42 @@ var polyline_start = true
 var emitted_done = false
 var can_emmit = false
 var material = null
+var close_robots = []
+var init_origin = null
+
 
 func hide():
 	visible = false
+
 	
 func show():
 	visible = true
+
+
+func get_average():
+	var res = Vector3(0, 0, 0)
+	
+	if len(close_robots) == 0:
+		return res
+		
+	var player_loc = get_global_transform().origin
+	for r in close_robots:
+		print(r.direction)
+		res += (player_loc - r.direction).normalized()
+	return res / len(close_robots)
+
 
 func _ready():
 	material = SpatialMaterial.new()
 	set_material_override(material)
 	
 	var location = get_global_transform()
-	var new_origin = initial_position + location.origin
-	location.origin = new_origin
+	init_origin = initial_position + location.origin
+	location.origin = init_origin
 	set_global_transform(location)
 	
-	direction = new_origin
-	target = new_origin
+	direction = init_origin
+	target = init_origin
 
 
 func _process(delta):
@@ -113,26 +131,42 @@ func _move():
 		shift.z = STEP
 	
 	direction += shift
+	direction -= get_average() * STEP * -1
 
 
 func _on_ImageProcessor_pass_data(data):
-	var tmp = []
-	for i in range(int(float(len(data)) / robots_amount * line_order), int(float(len(data)) / robots_amount * (line_order + 1))):
+	var tmp = [[Vector2(init_origin.x, init_origin.z)]]
+	for i in range(int(float(len(data)) / robots_amount * line_order), 
+		int(float(len(data)) / robots_amount * (line_order + 1))):
 		tmp.append(data[i])
 
 	polylines = tmp
+
 
 func _turn_on_brush():
 	$Brush.turn_on()
 	material.albedo_color = Color(1, 0, 0)
 	
+	
 func _turn_off_brush():
 	$Brush.turn_off()
 	material.albedo_color = Color(1, 1, 1)
+
 
 func _on_Timer_timeout():
 	can_emmit = true
 
 
 func _on_Area_area_exited(area):
-	emit_signal("collide")
+	if area.get_name() == 'Area':
+		emit_signal("collide")
+
+
+func _on_Vision_area_entered(area):
+	if area.get_name() == 'Vision':
+		close_robots.append(area.get_parent())
+
+
+func _on_Vision_area_exited(area):
+	if area.get_name() == 'Vision':
+		close_robots.erase(area.get_parent())

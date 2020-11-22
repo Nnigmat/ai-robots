@@ -62,19 +62,6 @@ func _check_state():
 		material.albedo_color = Color(0, 1, 0)
 
 
-func get_average():
-	var res = Vector3(0, 0, 0)
-	
-	if len(close_robots) == 0:
-		return res
-		
-	var player_loc = get_global_transform().origin
-	for r in close_robots:
-		print(r.direction)
-		res += (player_loc - r.direction).normalized()
-	return res / len(close_robots)
-
-
 func _ready():
 	material = SpatialMaterial.new()
 	set_material_override(material)
@@ -127,7 +114,8 @@ func _move():
 		'type': COLLISION_TYPE, 
 		'location': direction, 
 		'target': target, 
-		'speed': STEP
+		'speed': STEP,
+		'close_robots': close_robots
 	}
 	direction += Motion.move(params)
 	

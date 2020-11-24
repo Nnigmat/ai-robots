@@ -1,1 +1,3 @@
-*.svg
+.import/
+__pycache__/
+venv/

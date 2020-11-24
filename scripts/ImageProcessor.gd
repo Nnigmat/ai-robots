@@ -16,7 +16,7 @@ func _on_Timer_timeout():
 	if not ON:
 		return 
 		
-	OS.execute('python', ['/home/nnigmat/Code/University/Thesis/project/linedraw/linedraw.py', '--show-lines', '--rm-logs',  '-o', '/home/nnigmat/Code/University/Thesis/Simulator/other/output.svg'], true, inp)
+	OS.execute('python', [ProjectSettings.globalize_path("res://generator/linedraw/linedraw.py"), '--show-lines', '--rm-logs',  '-o', '/home/nnigmat/Code/University/Thesis/Simulator/other/output.svg'], true, inp)
 #	OS.execute('python3', ['../project/main.py'], true, arr)
 #	OS.execute('ls', ['-al'], true, arr)
 	

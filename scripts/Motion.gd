@@ -1,7 +1,8 @@
 extends Spatial
 
 
-func move(params):
+func move(params: Dictionary):
+	var robot = params.get('robot')
 	var type = params.get('type')
 	var speed = params.get('speed')
 	var target = params.get('target')
@@ -12,6 +13,8 @@ func move(params):
 		return no_avoidance(speed, target, location)
 	elif type == Globals.FIRST_ATTEMPT:
 		return first_attempt(speed, target, location, close_robots)
+	elif type == Globals.PRIORITY:
+		return priority(robot, speed, target, location, close_robots)
 	else:
 		return Vector3(0, 0, 0)
 	
@@ -48,3 +51,17 @@ func get_average(close_robots):
 	
 func first_attempt(speed, target, location, close_robots):
 	return no_avoidance(speed, target, location) - get_average(close_robots) * speed
+
+
+func is_highest_priority(robot, close_robots):
+	for r in close_robots:
+		if r.id > robot.id:
+			return false
+	
+	return true
+
+func priority(robot, speed, target, location, close_robots):
+	if not is_highest_priority(robot, close_robots):
+		return Vector3(0, 0, 0)
+	
+	return first_attempt(speed, target, location, close_robots)

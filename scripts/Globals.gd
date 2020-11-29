@@ -6,3 +6,4 @@ export var COLLILISON_TYPES = {
 
 export var NO_AVOIDANCE: String = 'No avoidance'
 export var FIRST_ATTEMPT: String = 'First attempt'
+export var PRIORITY: String = 'Priority'

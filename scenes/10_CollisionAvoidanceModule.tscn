@@ -24,4 +24,5 @@ show_lines = false
 AMOUNT = 10
 ROBOTS_PER_ROW = 20
 STROKE_FLOW = 0.05
-COLLISION_TYPE = "First attempt"
+ROBOT_SPEED = 2
+COLLISION_TYPE = "Priority"

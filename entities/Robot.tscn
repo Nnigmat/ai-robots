@@ -29,6 +29,7 @@ autostart = true
 shape = SubResource( 3 )
 
 [node name="Vision" type="Area" parent="."]
+transform = Transform( 1.76709, 0, 0, 0, 1.76709, 0, 0, 0, 1.76709, 0, 0, 0 )
 
 [node name="CollisionShape" type="CollisionShape" parent="Vision"]
 shape = SubResource( 4 )

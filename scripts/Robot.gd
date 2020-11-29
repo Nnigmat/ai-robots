@@ -7,7 +7,7 @@ signal collide()
 # The bigger STEP, the faster algo working, but it loses quality, due not reaching the cell fully
 export var STEP = 1
 export var can_input: bool = true
-export var line_order: int = 0
+export var id: int = 0
 export var robots_amount: int = 4
 export var draw_polylines: bool = true
 export var initial_position: Vector3 = Vector3(1, 3, 1)
@@ -82,7 +82,7 @@ func _process(delta):
 
 	# Apply movement
 	var player_loc = get_global_transform()
-	player_loc.origin = player_loc.origin.linear_interpolate(direction, delta * 4)
+	player_loc.origin = player_loc.origin.linear_interpolate(direction, 0.0001)
 	set_global_transform(player_loc)
 
 
@@ -111,6 +111,7 @@ func _near_target():
 
 func _move():
 	var params = {
+		'robot': self,
 		'type': COLLISION_TYPE, 
 		'location': direction, 
 		'target': target, 
@@ -123,8 +124,8 @@ func _move():
 
 func _on_ImageProcessor_pass_data(data):
 	var tmp = [[Vector2(init_origin.x, init_origin.z)]]
-	for i in range(int(float(len(data)) / robots_amount * line_order), 
-		int(float(len(data)) / robots_amount * (line_order + 1))):
+	for i in range(int(float(len(data)) / robots_amount * id), 
+		int(float(len(data)) / robots_amount * (id + 1))):
 		tmp.append(data[i])
 
 	polylines = tmp

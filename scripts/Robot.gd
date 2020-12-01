@@ -14,7 +14,7 @@ export var initial_position: Vector3 = Vector3(1, 3, 1)
 export var direction: Vector3 = Vector3(1, 3, 1)
 export var INPUT_DELAY: float = 0.4
 export var COLLISION_TYPE: String = Globals.NO_AVOIDANCE
-
+export var CANVAS_DIMS = [Globals.SIZE, Globals.SIZE]
 
 var current_delay: float = 0.0
 var polylines = []
@@ -82,7 +82,7 @@ func _process(delta):
 
 	# Apply movement
 	var player_loc = get_global_transform()
-	player_loc.origin = player_loc.origin.linear_interpolate(direction, 0.0001)
+	player_loc.origin = direction
 	set_global_transform(player_loc)
 
 
@@ -116,7 +116,9 @@ func _move():
 		'location': direction, 
 		'target': target, 
 		'speed': STEP,
-		'close_robots': close_robots
+		'close_robots': close_robots,
+		'width': CANVAS_DIMS[0],
+		'height': CANVAS_DIMS[1]
 	}
 	direction += Motion.move(params)
 	

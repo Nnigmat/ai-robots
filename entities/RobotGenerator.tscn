@@ -46,11 +46,22 @@ __meta__ = {
 
 [node name="Button" type="Button" parent="Info"]
 margin_left = 1.77826
-margin_top = 152.955
+margin_top = 212.275
 margin_right = 207.778
-margin_bottom = 211.955
+margin_bottom = 271.275
 custom_fonts/font = ExtResource( 3 )
 text = "Hide Robots"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Timer" type="Label" parent="Info"]
+margin_left = 2.16492
+margin_top = 131.196
+margin_right = 100.165
+margin_bottom = 172.196
+custom_fonts/font = ExtResource( 3 )
+text = "Timer: "
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -78,5 +89,9 @@ offset = Vector2( 1352.98, 340.221 )
 [node name="Sprite" type="Sprite" parent="OriginalImage"]
 position = Vector2( 256.992, 1275.3 )
 texture = ExtResource( 4 )
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true
 [connection signal="pass_image" from="ImageProcessor" to="." method="_on_ImageProcessor_pass_image"]
 [connection signal="pressed" from="Info/Button" to="." method="_on_Button_pressed"]
+[connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]

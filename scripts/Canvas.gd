@@ -1,7 +1,7 @@
 extends Spatial
 
-export var width: int = 512
-export var height: int = 512
+export var width: int = Globals.SIZE
+export var height: int = Globals.SIZE
 export var line_material: Material = preload("res://materials/line_material.tres")
 export var show_lines: bool = true
 

@@ -12,12 +12,17 @@ export(String, "No avoidance", 'First attempt', 'Priority') var COLLISION_TYPE =
 var done_robots = 0
 var collisions = 0
 var paints = 0
+var timer = 0
+var is_done = false
 var to_hide = true
 
 func _ready():
 	$Info/Done.text = 'Done: ' + str(done_robots) + ' / ' + str(AMOUNT)
 	$Info/Collisions.text = 'Collisions: ' + str(collisions / 2)
 	$Info/Paint.text = 'Paints: ' + str(paints)
+	$Info/Timer.text = 'Timer:  ' + str(timer)
+	
+	var canvas = get_parent().get_node('Canvas')
 	
 	for i in range(AMOUNT / ROBOTS_PER_ROW + 1):
 		for j in range(ROBOTS_PER_ROW):
@@ -35,6 +40,7 @@ func _ready():
 			robot.COLLISION_TYPE = COLLISION_TYPE
 			robot.robots_amount = AMOUNT
 			robot.STEP = ROBOT_SPEED
+			robot.CANVAS_DIMS = [canvas.width, canvas.height]
 			robot.id = i * ROBOTS_PER_ROW + j
 			robot.initial_position = Vector3(- i * 100, 3, j*100)
 			robot.set_name('Robot ' + str(i))
@@ -49,6 +55,8 @@ func _ready():
 func _on_robot_done():
 	done_robots += 1
 	$Info/Done.text = 'Done: ' + str(done_robots) + ' / ' + str(AMOUNT)
+	
+	is_done = done_robots == AMOUNT
 
 
 func _on_robot_collide():
@@ -77,3 +85,24 @@ func _on_Button_pressed():
 func _on_ImageProcessor_pass_image(path):
 	var image = load(path)
 	$ProcessedImage/Sprite.texture = image
+
+
+func _on_Timer_timeout():
+	if is_done:
+		$Timer.stop()
+		
+	timer += 1
+	$Info/Timer.text = 'Timer:  ' + _to_mm_ss(timer)
+
+
+func _to_mm_ss(seconds):
+	var mm = seconds / 60
+	var ss = seconds - mm * 60
+	
+	if mm < 10:
+		mm = '0' + str(mm)
+		
+	if ss < 10:
+		ss = '0' + str(ss)
+		
+	return str(mm) + ':' + str(ss)

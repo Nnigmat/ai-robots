@@ -8,13 +8,15 @@ func move(params: Dictionary):
 	var target = params.get('target')
 	var location = params.get('location')
 	var close_robots = params.get('close_robots')
+	var width = params.get('width')
+	var height = params.get('height')
 	
 	if type == Globals.NO_AVOIDANCE:
 		return no_avoidance(speed, target, location)
 	elif type == Globals.FIRST_ATTEMPT:
 		return first_attempt(speed, target, location, close_robots)
 	elif type == Globals.PRIORITY:
-		return priority(robot, speed, target, location, close_robots)
+		return priority(robot, speed, target, location, close_robots, width, height)
 	else:
 		return Vector3(0, 0, 0)
 	
@@ -60,8 +62,14 @@ func is_highest_priority(robot, close_robots):
 	
 	return true
 
-func priority(robot, speed, target, location, close_robots):
+func priority(robot, speed, target, location, close_robots, width, height):
 	if not is_highest_priority(robot, close_robots):
 		return Vector3(0, 0, 0)
+	
+	var map = []
+	for i in range(height):
+		map.append([])
+		for j in range(width):
+			map[i].append(0)
 	
 	return first_attempt(speed, target, location, close_robots)

@@ -65,6 +65,7 @@ func _check_state():
 func _ready():
 	material = SpatialMaterial.new()
 	set_material_override(material)
+	scale = Vector3(Globals.ROBOT_SIZE, Globals.ROBOT_SIZE, Globals.ROBOT_SIZE)
 	
 	var location = get_global_transform()
 	init_origin = initial_position + location.origin

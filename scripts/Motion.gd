@@ -62,7 +62,26 @@ func is_highest_priority(robot, close_robots):
 	
 	return true
 
+	
+func add_obstacle(map: Array, position: Vector2, size: int):
+	if position.x < 0 or position.y < 0:
+		return
+	
+	for i in range(position.x - (size - 1)):
+		for j in range(position.y - (size - 1)):
+			if i < 0 or i >= len(map):
+				continue
+				
+			if j < 0 or j >= len(map[i]):
+				continue
+				
+			map[i][j] = 1
+				
+
 func priority(robot, speed, target, location, close_robots, width, height):
+	if len(close_robots) > 0:
+		return no_avoidance(speed, target, location)
+	
 	if not is_highest_priority(robot, close_robots):
 		return Vector3(0, 0, 0)
 	
@@ -71,5 +90,9 @@ func priority(robot, speed, target, location, close_robots, width, height):
 		map.append([])
 		for j in range(width):
 			map[i].append(0)
+			
+	for r in close_robots:
+		var r_location = r.direction
+		add_obstacle(map, Vector2(r_location.x, r_location.z), Globals.ROBOT_SIZE)
 	
-	return first_attempt(speed, target, location, close_robots)
+	

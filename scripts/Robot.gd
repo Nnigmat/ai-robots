@@ -15,6 +15,7 @@ export var direction: Vector3 = Vector3(1, 3, 1)
 export var INPUT_DELAY: float = 0.4
 export var COLLISION_TYPE: String = Globals.NO_AVOIDANCE
 export var CANVAS_DIMS = [Globals.SIZE, Globals.SIZE]
+export var PATH_LENGTH = 10
 
 var current_delay: float = 0.0
 var polylines = []
@@ -26,7 +27,10 @@ var can_emmit = false
 var material = null
 var close_robots = []
 var init_origin = null
-
+var close_robots_changed = false
+var path = []
+var path_index = 0
+var freeze = false
 
 func hide():
 	visible = false
@@ -118,13 +122,36 @@ func _move():
 		'target': target, 
 		'speed': STEP,
 		'close_robots': close_robots,
+		'close_robots_changed': close_robots_changed,
 		'width': CANVAS_DIMS[0],
-		'height': CANVAS_DIMS[1]
+		'height': CANVAS_DIMS[1],
+		'path_length': PATH_LENGTH
 	}
-	direction += Motion.move(params)
-	
-# Signals
 
+	if COLLISION_TYPE != Globals.PRIORITY:
+		direction += Motion.move(params)
+		return
+	
+	if close_robots_changed:
+		close_robots_changed = false
+		freeze = false
+		path_index = 0
+			
+	if freeze:
+		return
+	
+	if len(path) != 0 and len(path) > path_index:
+		params['target'] = path[path_index]
+		path_index += 1
+	
+	var tmp = Motion.move(params)
+	if typeof(tmp) == TYPE_ARRAY:
+		path = tmp
+	else:
+		direction += tmp
+		
+		
+# Signals
 func _on_ImageProcessor_pass_data(data):
 	var tmp = [[Vector2(init_origin.x, init_origin.z)]]
 	for i in range(int(float(len(data)) / robots_amount * id), 
@@ -156,8 +183,10 @@ func _on_Area_area_exited(area):
 func _on_Vision_area_entered(area):
 	if area.get_name() == 'Vision':
 		close_robots.append(area.get_parent())
+		close_robots_changed = true
 
 
 func _on_Vision_area_exited(area):
 	if area.get_name() == 'Vision':
 		close_robots.erase(area.get_parent())
+		close_robots_changed = true

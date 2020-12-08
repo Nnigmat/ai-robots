@@ -10,13 +10,15 @@ func move(params: Dictionary):
 	var close_robots = params.get('close_robots')
 	var width = params.get('width')
 	var height = params.get('height')
+	var close_robots_changed = params.get('close_robots_changed')
+	var path_length = params.get('path_length')
 	
 	if type == Globals.NO_AVOIDANCE:
 		return no_avoidance(speed, target, location)
 	elif type == Globals.FIRST_ATTEMPT:
 		return first_attempt(speed, target, location, close_robots)
 	elif type == Globals.PRIORITY:
-		return priority(robot, speed, target, location, close_robots, width, height)
+		return priority(robot, speed, target, location, close_robots, width, height, close_robots_changed, path_length)
 	else:
 		return Vector3(0, 0, 0)
 	
@@ -63,16 +65,16 @@ func is_highest_priority(robot, close_robots):
 	return true
 
 	
-func add_obstacle(map, position: Vector2, size: int):
+func add_obstacle(map, position: Vector2, size: int, width, height):
 	if position.x < 0 or position.y < 0:
 		return
 	
 	for i in range(position.x - (size - 1)):
 		for j in range(position.y - (size - 1)):
-			if i < 0 or i >= len(map):
+			if i < 0 or i >= width:
 				continue
 				
-			if j < 0 or j >= len(map[i]):
+			if j < 0 or j >= height:
 				continue
 				
 			map[Vector2(i, j)] = {
@@ -81,12 +83,17 @@ func add_obstacle(map, position: Vector2, size: int):
 			}
 				
 
-func astar(grid, start_idxv, end_idxv):
+func astar(grid, start_idxv, end_idxv, length):
 	var pq = preload("res://scripts/PriorityQueue.gd").new()
 	pq.make()
 	var traversed = {}	
-	var result = _evaluate_grid_samethread(pq, traversed, grid, start_idxv.x, start_idxv.y, 
-		start_idxv.x, start_idxv.y, end_idxv.x, end_idxv.y)
+	var tmp = _evaluate_grid_samethread(pq, traversed, grid, start_idxv.x, start_idxv.y, 
+		start_idxv.x, start_idxv.y, end_idxv.x, end_idxv.y, length)
+		
+	# Convert to 3D space
+	var result = []
+	for el in tmp:
+		result.append(Vector3(el.x, 1, el.y))
 	return result
 	
 
@@ -127,7 +134,7 @@ func _grid_traverse_queue(pq, traversed, grid, curr, prev, to):
 	})
 	
 
-func _evaluate_grid_samethread(pq, traversed, grid, i, j, start_i, start_j, end_i, end_j):
+func _evaluate_grid_samethread(pq, traversed, grid, i, j, start_i, start_j, end_i, end_j, length):
 	return _evaluate_grid( 
 		[{
 			pq = pq, 
@@ -138,7 +145,8 @@ func _evaluate_grid_samethread(pq, traversed, grid, i, j, start_i, start_j, end_
 			start_i = start_i,
 			start_j = start_j,
 			end_i = end_i,
-			end_j = end_j
+			end_j = end_j,
+			length = length
 		}])
 
 func _evaluate_grid(userdata):
@@ -147,6 +155,7 @@ func _evaluate_grid(userdata):
 	var grid = userdata[0].grid
 	var start_i = userdata[0].start_i
 	var start_j = userdata[0].start_j
+	var path_length = userdata[0].length
 	var current_probe = 0
 	var maximum_probe = 100000
 	
@@ -176,6 +185,12 @@ func _evaluate_grid(userdata):
 		pq.pop()
 		current_probe += 1
 		
+		var path = []
+		_get_path(grid, traversed, Vector2(start_i, start_j), Vector2(i, j), Vector2(start_i, start_j), path)
+
+		if path_length < len(path):
+			return path
+		
 		if i == end_i and j == end_j:
 			var result = []
 			var start = Vector2(start_i, start_j)
@@ -198,8 +213,8 @@ func _get_path(grid, traversed, start, end, curr, result):
 		curr = traversed[curr].prev		
 
 
-func priority(robot, speed, target, location, close_robots, width, height):
-	if len(close_robots) > 0:
+func priority(robot, speed, target, location, close_robots, width, height, close_robots_changed, path_length):
+	if len(close_robots) == 0 or not close_robots_changed:
 		return no_avoidance(speed, target, location)
 	
 	if not is_highest_priority(robot, close_robots):
@@ -215,7 +230,6 @@ func priority(robot, speed, target, location, close_robots, width, height):
 			
 	for r in close_robots:
 		var r_location = r.direction
-		add_obstacle(map, Vector2(r_location.x, r_location.z), Globals.ROBOT_SIZE)
+		add_obstacle(map, Vector2(r_location.x, r_location.z), Globals.ROBOT_SIZE, width, height)
 	
-	print(astar(map, Vector2(location.x, location.z), Vector2(target.x, target.z)))
-	return Vector3(0, 0, 0)
+	return astar(map, Vector2(location.x, location.z), Vector2(target.x, target.z), path_length)

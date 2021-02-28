@@ -92,6 +92,7 @@ texture = ExtResource( 4 )
 
 [node name="Timer" type="Timer" parent="."]
 autostart = true
+
 [connection signal="pass_image" from="ImageProcessor" to="." method="_on_ImageProcessor_pass_image"]
 [connection signal="pressed" from="Info/Button" to="." method="_on_Button_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]

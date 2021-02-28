@@ -10,8 +10,9 @@ size = Vector2( 1024, 1024 )
 render_target_v_flip = true
 
 [node name="Camera" type="Camera" parent="Viewport"]
-transform = Transform( -1.62921e-07, 1, 1.62921e-07, 0, -1.62921e-07, 1, 1, 1.62921e-07, 2.65431e-14, 2050, 2900, 0 )
-far = 8096.0
+transform = Transform( -1.62921e-07, 1, 1.62921e-07, 0, -1.62921e-07, 1, 1, 1.62921e-07, 2.65431e-14, 2000, 2850, 0 )
+near = 29.85
+far = 8192.0
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 

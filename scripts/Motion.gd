@@ -1,5 +1,13 @@
 extends Spatial
 
+var state = [] 
+var path = []
+var path_index = 0
+
+export(float, 0, 10, 0.01) var stroke_width: float = 1 
+export(Color, RGB) var stroke_color = Color(0.2, 0.2, 0.2)
+export(Mesh) var stroke_shape = PlaneMesh.new()
+var material = SpatialMaterial.new()
 
 func move(params: Dictionary):
 	var robot = params.get('robot')
@@ -10,18 +18,29 @@ func move(params: Dictionary):
 	var close_robots = params.get('close_robots')
 	var width = params.get('width')
 	var height = params.get('height')
+	var radius = params.get('radius')
 	var close_robots_changed = params.get('close_robots_changed')
 	var path_length = params.get('path_length')
+	var robot_radius = params.get('robot_radius')
 	
 	if type == Globals.NO_AVOIDANCE:
 		return no_avoidance(speed, target, location)
 	elif type == Globals.FIRST_ATTEMPT:
 		return first_attempt(speed, target, location, close_robots)
 	elif type == Globals.PRIORITY:
-		return priority(robot, speed, target, location, close_robots, width, height, close_robots_changed, path_length)
+		return priority(robot, speed, target, location, close_robots, width, height, close_robots_changed, path_length, radius, robot_radius)
 	else:
 		return Vector3(0, 0, 0)
 	
+func draw_path():
+	for el in path:
+		var mesh_instance = MeshInstance.new()
+		mesh_instance.set_mesh(stroke_shape)
+		mesh_instance.set_material_override(material)
+		mesh_instance.transform.origin = el
+		mesh_instance.scale = Vector3(stroke_width, stroke_width, stroke_width)
+#		mesh_instance.get_surface_material(0).albedo_color = stroke_color
+		get_parent().get_parent().add_child(mesh_instance)
 	
 func no_avoidance(speed, target, location):
 	var shift = Vector3(0, 0, 0)
@@ -64,172 +83,53 @@ func is_highest_priority(robot, close_robots):
 	
 	return true
 
-	
-func add_obstacle(map, position: Vector2, size: int, width, height):
-	if position.x < 0 or position.y < 0:
-		return
-	
-	for i in range(position.x - (size - 1)):
-		for j in range(position.y - (size - 1)):
-			if i < 0 or i >= width:
-				continue
-				
-			if j < 0 or j >= height:
-				continue
-				
-			map[Vector2(i, j)] = {
-				path = false,
-				traversable = false
-			}
-				
 
-func astar(grid, start_idxv, end_idxv, length):
-	var pq = preload("res://scripts/PriorityQueue.gd").new()
-	pq.make()
-	var traversed = {}	
-	var tmp = _evaluate_grid_samethread(pq, traversed, grid, start_idxv.x, start_idxv.y, 
-		start_idxv.x, start_idxv.y, end_idxv.x, end_idxv.y, length)
-		
-	# Convert to 3D space
-	var result = []
-	for el in tmp:
-		result.append(Vector3(el.x, 1, el.y))
-	return result
-	
-
-func _distance(a, b):
-	var ab_x = abs(b.x-a.x)
-	var ab_y = abs(b.y-a.y)
-	return sqrt(abs(ab_x*ab_x+ab_y*ab_y))
-	
-func _grid_traverse_queue(pq, traversed, grid, curr, prev, to):
-
-	if !grid.has(curr):
-		return
-	
-	if grid[curr].has('traversable'):
-		if grid[curr]['traversable'] == false:
-			return
-	
-	var gx = _distance(prev, curr)
-	var hx = _distance(curr, to) 
-	var curr_weight = -(gx+hx)
-	
-	## Weights could never be lower, because of priority_queue
-	var already_visited = traversed.has(curr) # || (traversed[curr] != null && traversed[curr].weight > curr_weight)
-	
-	if already_visited:
-		return
-		
-	traversed[curr] = {
-		curr = curr,	
-		prev = prev,
-		weight = curr_weight,
-	}
-	
-	pq.push({
-		curr = curr,
-		prev = prev,
-		pqval = curr_weight
-	})
-	
-
-func _evaluate_grid_samethread(pq, traversed, grid, i, j, start_i, start_j, end_i, end_j, length):
-	return _evaluate_grid( 
-		[{
-			pq = pq, 
-			traversed = traversed, 
-			grid = grid, 
-			i = i,
-			j = j,
-			start_i = start_i,
-			start_j = start_j,
-			end_i = end_i,
-			end_j = end_j,
-			length = length
-		}])
-
-func _evaluate_grid(userdata):
-	var pq = userdata[0].pq
-	var traversed = userdata[0].traversed
-	var grid = userdata[0].grid
-	var start_i = userdata[0].start_i
-	var start_j = userdata[0].start_j
-	var path_length = userdata[0].length
-	var current_probe = 0
-	var maximum_probe = 100000
-	
-	## TCO
-	while true:
-		var i = userdata[0].i
-		var j = userdata[0].j
-		var end_i = userdata[0].end_i
-		var end_j = userdata[0].end_j
-
-		var curr = Vector2(i, j)
-		var end = Vector2(end_i, end_j)
-		_grid_traverse_queue(pq, traversed, grid, Vector2(i-1,j), curr, end)
-		_grid_traverse_queue(pq, traversed, grid, Vector2(i+1,j), curr, end)
-		_grid_traverse_queue(pq, traversed, grid, Vector2(i,j-1), curr, end)
-		_grid_traverse_queue(pq, traversed, grid, Vector2(i,j+1), curr, end)	
-		
-		_grid_traverse_queue(pq, traversed, grid, Vector2(i-1,j-1), curr, end)
-		_grid_traverse_queue(pq, traversed, grid, Vector2(i-1,j+1), curr, end)
-		_grid_traverse_queue(pq, traversed, grid, Vector2(i+1,j+1), curr, end)
-		_grid_traverse_queue(pq, traversed, grid, Vector2(i+1,j-1), curr, end)
-		
-		if pq.empty():
-			return []
-			
-		var top = pq.top()
-		pq.pop()
-		current_probe += 1
-		
-		var path = []
-		_get_path(grid, traversed, Vector2(start_i, start_j), Vector2(i, j), Vector2(start_i, start_j), path)
-
-		if path_length < len(path):
-			return path
-		
-		if i == end_i and j == end_j:
-			var result = []
-			var start = Vector2(start_i, start_j)
-			var begin = Vector2(end.x, end.y)
-			_get_path(grid, traversed, start, end, begin, result)
-			return result
-		elif current_probe > maximum_probe:
-			return []
-		else:			
-			userdata[0].i = top.curr.x
-			userdata[0].j = top.curr.y
-
-
-func _get_path(grid, traversed, start, end, curr, result):
-	while true:
-		if curr == start:
-			result.push_front(curr)
-			return
-		result.push_front(curr)
-		curr = traversed[curr].prev		
-
-
-func priority(robot, speed, target, location, close_robots, width, height, close_robots_changed, path_length):
-	if len(close_robots) == 0 or not close_robots_changed:
+func priority(robot, speed, target, location, close_robots, width, height, close_robots_changed, path_length, radius, robot_radius):
+	# If no robots nearby just do no avoidance
+	if len(close_robots) == 1:
 		return no_avoidance(speed, target, location)
-	
+
+	# If we have robots nearby and the robot is not the highest priority - freeze
 	if not is_highest_priority(robot, close_robots):
 		return Vector3(0, 0, 0)
 	
-	var map = {}
-	for i in range(height):
-		for j in range(width):
-			map[Vector2(i, j)] = {
-				path = false,
-				traversable = true
-			}
-			
-	for r in close_robots:
-		var r_location = r.direction
-		add_obstacle(map, Vector2(r_location.x, r_location.z), Globals.ROBOT_SIZE, width, height)
+	# If robot near its closest temp point, take the next one
+	if len(path) != 0 and len(path) > path_index and near_target(location, path[path_index], speed):
+		path_index += 1
+		
+	# If point exist, do no_avoidance to this point
+	if len(path) > path_index:
+		return no_avoidance(speed, path[path_index], location)
 	
-	return astar(map, Vector2(location.x, location.z), Vector2(target.x, target.z), path_length)
+	# Otherwise do A* search
+	var blocked_points = []
+	for r in close_robots:
+		if r.id != robot.id:
+			blocked_points.append(r.direction)
+	
+	var astar = gdAstar.new()
+	astar.Init(location.x, location.z, radius, robot_radius, blocked_points)
+
+	var limited_target = target
+	if (target - location).length() > path_length:
+		limited_target = (target - location).normalized() * path_length + location
+	
+#	print(astar.FindPath(location.x, location.z, limited_target.x, limited_target.z))
+	var next = astar.FindPath(location.x, location.z, int(limited_target.x), int(limited_target.z))
+#	print(location.x, ' ', location.z, ' ', int(limited_target.x), ' ', int(limited_target.z), ' ', radius, ' ', robot_radius, ' ', blocked_points)
+	
+	if not next.empty():
+		path = toVector3Array(next)
+		draw_path()
+	
+	return Vector3(0, 0, 0)
+
+
+func toVector3Array(array):
+	var res = []
+	for el in array:
+		res.append(Vector3(el.x, 0, el.y))
+	return res
+
+func near_target(direction, target, step):
+	return abs(direction.x - target.x) <= step and abs(direction.z - target.z) <= step

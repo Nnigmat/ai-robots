@@ -21,7 +21,8 @@ show_lines = false
 [node name="MiniCamera" parent="." instance=ExtResource( 5 )]
 
 [node name="RobotGenerator" parent="." instance=ExtResource( 3 )]
+AMOUNT = 10
 ROBOTS_PER_ROW = 20
-STROKE_FLOW = 0.05
-ROBOT_SPEED = 10
+STROKE_FLOW = 0.2
+ROBOT_SPEED = 1
 COLLISION_TYPE = "Priority"

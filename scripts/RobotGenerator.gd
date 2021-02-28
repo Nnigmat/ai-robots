@@ -42,7 +42,7 @@ func _ready():
 			robot.STEP = ROBOT_SPEED
 			robot.CANVAS_DIMS = [canvas.width, canvas.height]
 			robot.id = i * ROBOTS_PER_ROW + j
-			robot.initial_position = Vector3(- i * 100, 3, j*100)
+			robot.initial_position = Vector3(- i * 250, 3, j * 250)
 			robot.set_name('Robot ' + str(i))
 
 			robot.connect("done", self, "_on_robot_done")

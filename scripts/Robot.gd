@@ -3,6 +3,7 @@ extends MeshInstance
 signal done()
 signal collide()
 
+onready var Motion = $Motion
 
 # The bigger STEP, the faster algo working, but it loses quality, due not reaching the cell fully
 export var STEP = 1
@@ -15,7 +16,9 @@ export var direction: Vector3 = Vector3(1, 3, 1)
 export var INPUT_DELAY: float = 0.4
 export var COLLISION_TYPE: String = Globals.NO_AVOIDANCE
 export var CANVAS_DIMS = [Globals.SIZE, Globals.SIZE]
-export var PATH_LENGTH = 10
+export var PATH_LENGTH = 70
+export var RADIUS = 100
+export var ROBOT_RADIUS = 20
 
 var current_delay: float = 0.0
 var polylines = []
@@ -61,6 +64,7 @@ func _check_state():
 	
 	if len(polylines) == 0 and _near_target() and can_emmit: 
 		emitted_done = true
+		id = -1
 		emit_signal("done")
 		_turn_off_brush()
 		material.albedo_color = Color(0, 1, 0)
@@ -82,6 +86,9 @@ func _ready():
 
 func _process(delta):
 #	_user_move()
+	if emitted_done:
+		return
+
 	_check_state()
 	_move()
 
@@ -125,32 +132,16 @@ func _move():
 		'close_robots_changed': close_robots_changed,
 		'width': CANVAS_DIMS[0],
 		'height': CANVAS_DIMS[1],
-		'path_length': PATH_LENGTH
+		'path_length': PATH_LENGTH,
+		'radius': RADIUS,
+		'robot_radius': ROBOT_RADIUS,
 	}
 
-	if COLLISION_TYPE != Globals.PRIORITY:
-		direction += Motion.move(params)
-		return
+	direction += Motion.move(params)
 	
-	if close_robots_changed:
-		close_robots_changed = false
-		freeze = false
-		path_index = 0
-			
-	if freeze:
-		return
-	
-	if len(path) != 0 and len(path) > path_index:
-		params['target'] = path[path_index]
-		path_index += 1
-	
-	var tmp = Motion.move(params)
-	if typeof(tmp) == TYPE_ARRAY:
-		path = tmp
-	else:
-		direction += tmp
-		
-		
+	close_robots_changed = false
+
+
 # Signals
 func _on_ImageProcessor_pass_data(data):
 	var tmp = [[Vector2(init_origin.x, init_origin.z)]]
@@ -181,12 +172,12 @@ func _on_Area_area_exited(area):
 
 
 func _on_Vision_area_entered(area):
-	if area.get_name() == 'Vision':
+	if area.get_name() == 'Area':
 		close_robots.append(area.get_parent())
 		close_robots_changed = true
 
 
 func _on_Vision_area_exited(area):
-	if area.get_name() == 'Vision':
+	if area.get_name() == 'Area':
 		close_robots.erase(area.get_parent())
 		close_robots_changed = true

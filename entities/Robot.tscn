@@ -14,9 +14,9 @@ radius = 1.03431
 margin = 0.001
 radius = 3.00019
 
-[sub_resource type="PlaneMesh" id=8]
+[sub_resource type="PlaneMesh" id=5]
 
-[sub_resource type="SpatialMaterial" id=7]
+[sub_resource type="SpatialMaterial" id=6]
 flags_unshaded = true
 params_cull_mode = 1
 params_line_width = 0.1
@@ -25,13 +25,13 @@ params_grow = true
 params_grow_amount = 0.1
 albedo_color = Color( 0, 0, 0, 1 )
 
-[sub_resource type="SpatialMaterial" id=5]
-next_pass = SubResource( 7 )
+[sub_resource type="SpatialMaterial" id=7]
+next_pass = SubResource( 6 )
 params_cull_mode = 1
 albedo_color = Color( 0.986026, 0.986026, 0.986026, 1 )
 
-[sub_resource type="SphereMesh" id=6]
-material = SubResource( 5 )
+[sub_resource type="SphereMesh" id=8]
+material = SubResource( 7 )
 radial_segments = 18
 rings = 1
 
@@ -59,11 +59,11 @@ shape = SubResource( 4 )
 
 [node name="Motion" parent="." instance=ExtResource( 2 )]
 stroke_color = Color( 1, 0, 0, 1 )
-stroke_shape = SubResource( 8 )
+stroke_shape = SubResource( 5 )
 
 [node name="Cone of vision" type="MeshInstance" parent="."]
 transform = Transform( 5.3, 0, 0, 0, 0.075, 0, 0, 0, 5.3, 0, 0, 0 )
-mesh = SubResource( 6 )
+mesh = SubResource( 8 )
 material/0 = null
 
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]

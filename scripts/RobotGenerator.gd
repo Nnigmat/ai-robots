@@ -106,3 +106,7 @@ func _to_mm_ss(seconds):
 		ss = '0' + str(ss)
 		
 	return str(mm) + ':' + str(ss)
+
+
+func _on_Show_grid_Button_pressed():
+	get_node('/root/Game/Canvas').toggle_lines()

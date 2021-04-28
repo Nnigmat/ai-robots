@@ -48,7 +48,9 @@ func _check_state():
 		return 
 		
 	if len(polylines) != 0 and len(polyline) == 0 and _near_target():
-		polyline = polylines.pop_back()
+		var tmp = polylines.pop_back()
+		polyline = tmp['points']
+		_change_brush_color(tmp['color'])
 		polyline_start = true
 		_turn_off_brush()
 	
@@ -141,16 +143,22 @@ func _move():
 	
 	close_robots_changed = false
 
-
 # Signals
 func _on_ImageProcessor_pass_data(data):
-	var tmp = [[Vector2(init_origin.x, init_origin.z)]]
+	var tmp = [{
+		'points': [Vector2(init_origin.x, init_origin.z)],
+		'width': 0,
+		'color': null
+	}]
+	
 	for i in range(int(float(len(data)) / robots_amount * id), 
 		int(float(len(data)) / robots_amount * (id + 1))):
 		tmp.append(data[i])
 
 	polylines = tmp
 
+func _change_brush_color(color):
+	$Brush.change_brush_color(color) 
 
 func _turn_on_brush():
 	$Brush.turn_on()

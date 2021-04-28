@@ -228,7 +228,8 @@ def sketch(path):
 
     if show_lines:
         import json
-        print(json.dumps({'data': lines}))
+        print(json.dumps(
+            {'data': list(map(lambda x: {'points': x, "color": "#fff", 'width': 1}, lines))}))
 
     return lines
 
@@ -277,7 +278,6 @@ if __name__ == "__main__":
                         const=not rm_logs, default=rm_logs, action='store_const', help="Don't show the logs")
     parser.add_argument('--export-svg', dest='export_svg',
                         const=not export_svg, default=export_svg, action='store_const', help="Export svg")
-
 
     parser.add_argument('--hatch_size', dest='hatch_size',
                         default=hatch_size, action='store', nargs='?', type=int,

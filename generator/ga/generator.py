@@ -4,26 +4,29 @@ from collections import Counter
 from functools import reduce
 from operator import iconcat
 from math import sqrt, exp
+from multiprocessing import Pool
+
+LOGS = True
 
 # Available colors
 COLORS = ['black', 'yellow', 'green', 'orange']
 
 # Distribution of colors among the polylines
 # Currently it is equal distribution
-COLORS_DIRSTRIBUTION = [1 / len(COLORS) for i in range(COLORS)]
+COLORS_DIRSTRIBUTION = [1 / len(COLORS) for i in range(len(COLORS))]
 
 # Radius from point to create new point
-POINT_DELTA = 10
+POINT_DELTA = 20
 
 # Probability to switch polyline's color
-COLOR_SWITCH_PROB = 0.25
+COLOR_SWITCH_PROB = 0.15
 
 # Probability to add/remove point to/from polyline
-PIONT_ACTION_PROB = 0.5
+PIONT_ACTION_PROB = 0.8
 
 # Probability to remove point from polyline
 # 1 - POINT_REMOVE_PROB is a probability to add point to polyline
-POINT_REMOVE_PROB = 0.5
+POINT_REMOVE_PROB = 0.1
 
 # Probability to remove point from beggining polyline
 # 1 - POINT_REMOVE_BEGGINING_PROB is a probability to remove point from ending polyline
@@ -34,19 +37,19 @@ POINT_REMOVE_BEGGINING_PROB = 0.5
 POINT_ADD_BEGGINING_PROB = 0.5
 
 # Probability to modify point
-POINT_MODIFY_PROB = 0.2
+POINT_MODIFY_PROB = 0.6
 
 # Distribution of points among each other
-POINTS_DIRSTRIBUTION = 10
+POINTS_DIRSTRIBUTION = 20
 
 # Maximum distribution of points among each other
-MAX_POINTS_DISTRIBUTION
+MAX_POINTS_DISTRIBUTION = 80
 
 # Desired average length of polyline
-POLYLINE_LENGTH = 50
+POLYLINE_LENGTH = 100
 
 # Maximum desired average length of polyline
-MAX_POLYLINE_LENGTH = 200
+MAX_POLYLINE_LENGTH = 300
 
 
 def generate_point(x, y):
@@ -78,17 +81,20 @@ def generate_individual(individual):
         if random() < COLOR_SWITCH_PROB:
             polyline['color'] = choice(COLORS)
 
+        if len(polyline['points']) == 0:
+            continue
+
         if random() < PIONT_ACTION_PROB:
             if random() < POINT_REMOVE_PROB:
                 if random() < POINT_REMOVE_BEGGINING_PROB:
                     polyline['points'].pop(0)
                 else:
-                    polyline['points'].pop(len(polyline) - 1)
+                    polyline['points'].pop(len(polyline['points']) - 1)
 
             else:
                 if random() < POINT_ADD_BEGGINING_PROB:
                     point = generate_point(*polyline['points'][0])
-                    polyline['points'].insert(point)
+                    polyline['points'].insert(0, point)
                 else:
                     point = generate_point(*polyline['points'][-1])
                     polyline['points'].append(point)
@@ -104,39 +110,46 @@ def generate_individual(individual):
 def generate_population(individual, n_population=10):
     '''Generate population of individuals
     '''
+    if LOGS:
+        print('Population generation...')
+
     init_population = [deepcopy(individual)
-                       for individual in range(n_population)]
-    return list(map(generate_individual, init_population))
+                       for _ in range(n_population - 1)]
+    init_population.append(individual)
+
+    with Pool(100) as p:
+        return p.map(generate_individual, init_population)
 
 
 def color_distribution_score(individual):
     '''Calculate the distribution of polyline colors and compare it to goal
     '''
     counter = Counter(list(map(lambda x: x['color'], individual)))
-    distribution = [0 for _ in range(COLORS)]
+    distribution = [0 for _ in range(len(COLORS))]
     delta = 0
+    total = sum(counter.values())
 
     for key, value in counter.items():
-        distribution[COLORS.index(key)] = value
+        distribution[COLORS.index(key)] = value / total
 
     for (dist1, dist2) in zip(COLORS_DIRSTRIBUTION, distribution):
         delta += abs(dist1 - dist2)
 
-    return 1 - delta
+    return 1 - delta / len(COLORS)
 
 
 def distances_between_points(individual):
     '''Calculate the closest distances between the points and compare it to goal
     '''
-    points = reduce(iconcat, list(map(lambda x: x['points'])), [])
+    points = reduce(iconcat, list(map(lambda x: x['points'], individual)), [])
     delta = 0
 
     for i, point1 in enumerate(points):
         minimum = float('inf')
         for j, point2 in enumerate(points):
             dist = distance(point1, point2)
-            if distance < minimum:
-                minimum = distance
+            if dist < minimum:
+                minimum = dist
 
         delta += minimum
 
@@ -152,6 +165,9 @@ def len_polylines(individual):
     lens = 0
 
     for polyline in individual:
+        if len(polyline['points']) == 0:
+            continue
+
         prev = polyline['points'][0]
         for point in polyline['points'][1:]:
             lens += distance(prev, point)
@@ -166,18 +182,28 @@ def evaluate(individual):
 
 
 def select_best(population):
-    scores = list(map(evaluate, population))
-    return population[scores.index(max(scores))]
+    if LOGS:
+        print('Evaluation...')
+
+    with Pool(100) as p:
+        scores = p.map(evaluate, population)
+
+    return population[scores.index(max(scores))], max(scores)
 
 
-def generate(individual, n_population=10, n_generation=10, logs=True):
-    best = data
+def generate(individual, n_population=2, n_generation=10, logs=True):
+    best = individual
+    best_individuals = [best]
+
+    global LOGS
+    LOGS = logs
 
     for i in range(n_generation):
-        population = generate_population(individual, n_population)
+        population = generate_population(best, n_population)
         best, score = select_best(population)
+        best_individuals.append(best)
 
         if logs:
-            print(f'Generation {i}. Best score: {score}')
+            print(f'Generation {i + 1}. Best score: {score}', end='\n\n')
 
-    return best
+    return best, best_individuals

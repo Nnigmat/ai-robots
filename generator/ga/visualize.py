@@ -24,7 +24,7 @@ def compare(x, y):
 def visualize(individual, name=None, path=None):
     '''Creates .png and .svg files
     '''
-    out = '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" version="1.1">'
+    out = '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" version="1.1" fill="white">'
 
     for polyline in individual:
         line = ",".join([str(point[0]*0.5)+","+str(point[1]*0.5)
@@ -36,7 +36,8 @@ def visualize(individual, name=None, path=None):
     name = name if name else md5(out.encode()).hexdigest()
     write_to = (path or (VISUALIZATION_PATH + name)) + '.png'
 
-    svg2png(bytestring=out.encode('utf-8'), write_to=write_to)
+    svg2png(bytestring=out.encode('utf-8'),
+            write_to=write_to, background_color='white')
 
     f = open((path or (VISUALIZATION_PATH + name)) + '.svg', 'w')
     f.write(out)
@@ -61,7 +62,7 @@ def visualize_generation(generation, generate_all=True):
             append_images=imgs[1:],
             optimize=False,
             duration=100,
-            loop=0
+            loop=0,
         )
 
 

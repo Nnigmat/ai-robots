@@ -107,8 +107,7 @@ func priority(robot, speed, target, location, close_robots, width, height, close
 		if r.id != robot.id:
 			blocked_points.append(r.direction)
 	
-	var astar = gdAstar.new()
-	astar.Init(location.x, location.z, radius, robot_radius, blocked_points)
+	var astar = init_astar(location.x, location.z, radius, robot_radius, blocked_points, width, height)
 
 	var limited_target = target
 	if (target - location).length() > path_length:
@@ -124,6 +123,18 @@ func priority(robot, speed, target, location, close_robots, width, height, close
 	
 	return Vector3(0, 0, 0)
 
+func init_astar(x, y, radius, robot_radius, blocked_points, width, height):
+	var astar = gdAstar.new()
+	
+	for i in range(width):
+		for j in range(height):
+			for point in blocked_points:
+				if point.x == i and point.y == j:
+					continue
+				
+				astar.AddPoint(i, j)
+				
+	return astar
 
 func toVector3Array(array):
 	var res = []

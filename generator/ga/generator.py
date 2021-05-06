@@ -3,8 +3,10 @@ from random import choice, random, randint
 from collections import Counter
 from functools import reduce
 from operator import iconcat
-from math import sqrt, exp
+from math import sqrt, exp, acos
 from multiprocessing import Pool
+from visualize import visualize
+from statistics import write
 
 LOGS = True
 
@@ -16,17 +18,17 @@ COLORS = ['black', 'yellow', 'green', 'orange']
 COLORS_DIRSTRIBUTION = [1 / len(COLORS) for i in range(len(COLORS))]
 
 # Radius from point to create new point
-POINT_DELTA = 20
+POINT_DELTA = 5
 
 # Probability to switch polyline's color
-COLOR_SWITCH_PROB = 0.15
+COLOR_SWITCH_PROB = 0.3
 
 # Probability to add/remove point to/from polyline
-PIONT_ACTION_PROB = 0.8
+PIONT_ACTION_PROB = 0.5
 
 # Probability to remove point from polyline
 # 1 - POINT_REMOVE_PROB is a probability to add point to polyline
-POINT_REMOVE_PROB = 0.1
+POINT_REMOVE_PROB = 0.5
 
 # Probability to remove point from beggining polyline
 # 1 - POINT_REMOVE_BEGGINING_PROB is a probability to remove point from ending polyline
@@ -34,22 +36,37 @@ POINT_REMOVE_BEGGINING_PROB = 0.5
 
 # Probability to add point to beggining polyline
 # 1 - POINT_ADD_BEGGINING_PROB is a probability to add point to ending polyline
-POINT_ADD_BEGGINING_PROB = 0.5
+POINT_ADD_BEGGINING_PROB = 0.2
 
 # Probability to modify point
-POINT_MODIFY_PROB = 0.6
+POINT_MODIFY_PROB = 0.5
 
 # Distribution of points among each other
-POINTS_DIRSTRIBUTION = 20
+POINTS_DIRSTRIBUTION = 100
 
 # Maximum distribution of points among each other
-MAX_POINTS_DISTRIBUTION = 80
+MAX_POINTS_DISTRIBUTION = 400
+MIN_POINTS_DISTRIBUTION = 200
 
 # Desired average length of polyline
-POLYLINE_LENGTH = 100
+POLYLINE_LENGTH = 3000
 
 # Maximum desired average length of polyline
-MAX_POLYLINE_LENGTH = 300
+MAX_POLYLINE_LENGTH = 4000
+MIN_POLYLINE_LENGTH = 2000
+
+# Distance in both direction where polyline can be shifted
+POLYLINE_SHIFT = 10
+
+# Probability to shift the polyline
+POLYLINE_SHIFT_PROB = 0.1
+
+# Values for polyline smoothness
+POLYLINE_SMOOTHNESS = 150
+POLYLINE_SMOOTHNESS_MAX = 180
+POLYLINE_SMOOTHNESS_MIN = 0
+
+avg_scores = []
 
 
 def generate_point(x, y):
@@ -62,10 +79,21 @@ def distance(point1, point2):
     return sqrt((point1[0] - point1[1]) ** 2 + (point2[0] - point2[1]) ** 2)
 
 
-def score_lens(value, length, max_length):
-    if value <= length:
-        return value / length
-    elif length < value < max_length:
+def angle_between_3_points(point1, point2, point3):
+    a = distance(point1, point2)
+    b = distance(point2, point3)
+    c = distance(point1, point3)
+
+    if a == 0 or b == 0:
+        return 0
+
+    return acos((a ** 2 + b ** 2 - c ** 2) / 2 / a / b)
+
+
+def score_lens(value, length, max_length, min_length=0):
+    if min_length <= value <= length:
+        return (value - min_length) / (length - min_length)
+    elif length < value <= max_length:
         return 1 - (value - length) / (max_length - length)
 
     return 0
@@ -99,10 +127,16 @@ def generate_individual(individual):
                     point = generate_point(*polyline['points'][-1])
                     polyline['points'].append(point)
 
+        to_shift = random() < POLYLINE_SHIFT_PROB
+        shift_x = randint(-POLYLINE_SHIFT,
+                          POLYLINE_SHIFT) if to_shift else 0
+        shift_y = randint(-POLYLINE_SHIFT,
+                          POLYLINE_SHIFT) if to_shift else 0
+
         for i, point in enumerate(polyline['points']):
             if random() < POINT_MODIFY_PROB:
-                new_point = generate_point(*point)
-                polyline['points'][i] = new_point
+                x, y = generate_point(*point)
+                polyline['points'][i] = [x + shift_x, y + shift_y]
 
     return individual
 
@@ -147,6 +181,9 @@ def distances_between_points(individual):
     for i, point1 in enumerate(points):
         minimum = float('inf')
         for j, point2 in enumerate(points):
+            if i == j:
+                continue
+
             dist = distance(point1, point2)
             if dist < minimum:
                 minimum = dist
@@ -154,11 +191,34 @@ def distances_between_points(individual):
         delta += minimum
 
     avg_delta = delta / len(points)
-    return score_lens(avg_delta, POINTS_DIRSTRIBUTION, MAX_POINTS_DISTRIBUTION)
+    print(f'Average distance between points: {avg_delta}')
+    return score_lens(avg_delta, POINTS_DIRSTRIBUTION, MAX_POINTS_DISTRIBUTION, min_length=MIN_POINTS_DISTRIBUTION)
 
 
-# def distances_between_polylines(individual):
-#     pass
+def smoothness_of_polylines(individual):
+    smoothness = 0
+
+    for polyline in individual:
+        if len(polyline['points']) < 3:
+            continue
+
+        prev1 = polyline['points'][0]
+        prev2 = polyline['points'][1]
+
+        tmp = 0
+        for point in polyline['points'][2:]:
+            angle = angle_between_3_points(prev1, prev2, point)
+            tmp += 360 - angle if angle > 180 else angle
+
+            prev1 = prev2
+            prev2 = point
+
+        # Add average angle of polyline
+        smoothness += tmp / (len(polyline['points']) - 2)
+
+    avg_smoothness = smoothness / len(polyline)
+    print(f'Average smoothness of polylines: {avg_smoothness}')
+    return score_lens(avg_smoothness, POLYLINE_SMOOTHNESS, POLYLINE_SMOOTHNESS_MAX, min_length=POLYLINE_SMOOTHNESS_MIN)
 
 
 def len_polylines(individual):
@@ -174,11 +234,34 @@ def len_polylines(individual):
             prev = point
 
     avg_len = lens / len(individual)
-    return score_lens(avg_len, POLYLINE_LENGTH, MAX_POLYLINE_LENGTH)
+    print(f'Average length of polyline: {avg_len}')
+    return score_lens(avg_len, POLYLINE_LENGTH, MAX_POLYLINE_LENGTH, min_length=MIN_POLYLINE_LENGTH)
 
 
 def evaluate(individual):
-    return color_distribution_score(individual) + distances_between_points(individual) + len_polylines(individual)
+    return {
+        'color': color_distribution_score(individual),
+        'points': distances_between_points(individual),
+        'polylines': len_polylines(individual),
+        'smoothness': smoothness_of_polylines(individual),
+    }
+
+
+def store_global_scores(scores):
+    global avg_scores
+
+    tmp = {}
+    for score in scores:
+        for key, value in score.items():
+            if key not in tmp:
+                tmp[key] = value
+            else:
+                tmp[key] += value
+
+    for key, value in tmp.items():
+        tmp[key] = value / len(population)
+
+    avg_scores.append(tmp)
 
 
 def select_best(population):
@@ -188,7 +271,10 @@ def select_best(population):
     with Pool(100) as p:
         scores = p.map(evaluate, population)
 
-    return population[scores.index(max(scores))], max(scores)
+    total_scores = list(
+        map(lambda x: x['color'] + x['points'] + x['polylines'] + x['smoothness'], scores))
+    max_score_index = total_scores.index(max(total_scores))
+    return population[max_score_index], max(total_scores), scores[max_score_index]
 
 
 def generate(individual, n_population=2, n_generation=10, logs=True):
@@ -200,10 +286,19 @@ def generate(individual, n_population=2, n_generation=10, logs=True):
 
     for i in range(n_generation):
         population = generate_population(best, n_population)
-        best, score = select_best(population)
+        best, score, categories = select_best(population)
         best_individuals.append(best)
 
-        if logs:
-            print(f'Generation {i + 1}. Best score: {score}', end='\n\n')
+        visualize(best, str(i + 1))
 
+        if logs:
+            print(f'\nGeneration {i + 1}. Best score: {score}.')
+            print(f'Color score: {categories["color"]}.')
+            print(f'Points distribution score: {categories["points"]}.')
+            print(f'Polylines length score: {categories["polylines"]}.')
+            print(f'Polylines smoothing score: {categories["smoothness"]}.')
+
+            print('\n')
+
+    write(best, globals())
     return best, best_individuals

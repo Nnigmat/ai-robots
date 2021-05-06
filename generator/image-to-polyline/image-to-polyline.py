@@ -24,12 +24,16 @@ def convert(IM):
 
 if __name__ == '__main__':
     image_path = sys.argv[1]
+    width = int(sys.argv[2])
+    height = int(sys.argv[3])
 
     try:
         IM = Image.open(image_path)
     except IOError:
         print(f'No such file {image_path}')
         sys.exit(1)
+
+    IM = IM.resize((width, height))
 
     print(json.dumps({
         'data': convert(IM)

@@ -14,5 +14,4 @@ if __name__ == '__main__':
         polyline['color'] = 'black'
 
     best, best_individuals = generate(data, n_generation=20, n_population=10)
-    visualize(best, 'best')
     visualize_generation(best_individuals)

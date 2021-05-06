@@ -229,7 +229,7 @@ def sketch(path):
     if show_lines:
         import json
         print(json.dumps(
-            {'data': list(map(lambda x: {'points': x, "color": "#fff", 'width': 1}, lines))}))
+            {'data': list(map(lambda x: {'points': x, "color": "#000", 'width': 1}, lines))}))
 
     return lines
 

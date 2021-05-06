@@ -7,7 +7,7 @@ export var AMOUNT: int = 4
 export var ROBOTS_PER_ROW: int = 10 
 export var STROKE_FLOW: float = 0.2
 export var ROBOT_SPEED: int = 4
-export(String, "No avoidance", 'First attempt', 'Priority') var COLLISION_TYPE = Globals.NO_AVOIDANCE
+export(String, 'No avoidance', 'First attempt', 'Priority') var COLLISION_TYPE = Globals.NO_AVOIDANCE
 
 var done_robots = 0
 var collisions = 0

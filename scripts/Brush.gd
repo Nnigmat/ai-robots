@@ -38,6 +38,9 @@ func _process(delta):
 	timer += delta
 
 func change_brush_color(color):
+	if not color:
+		return
+		
 	material = SpatialMaterial.new()
 	material.albedo_color = color
 

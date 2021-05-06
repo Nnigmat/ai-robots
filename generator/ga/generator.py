@@ -5,7 +5,7 @@ from functools import reduce
 from operator import iconcat
 from math import sqrt, exp, acos
 from multiprocessing import Pool
-from visualize import visualize
+from visualize import visualize, visualize_best
 from statistics import write
 
 LOGS = True
@@ -259,7 +259,7 @@ def store_global_scores(scores):
                 tmp[key] += value
 
     for key, value in tmp.items():
-        tmp[key] = value / len(population)
+        tmp[key] = value / len(scores)
 
     avg_scores.append(tmp)
 
@@ -270,6 +270,8 @@ def select_best(population):
 
     with Pool(100) as p:
         scores = p.map(evaluate, population)
+
+    store_global_scores(scores)
 
     total_scores = list(
         map(lambda x: x['color'] + x['points'] + x['polylines'] + x['smoothness'], scores))
@@ -289,7 +291,7 @@ def generate(individual, n_population=2, n_generation=10, logs=True):
         best, score, categories = select_best(population)
         best_individuals.append(best)
 
-        visualize(best, str(i + 1))
+        visualize(best, name=str(i + 1))
 
         if logs:
             print(f'\nGeneration {i + 1}. Best score: {score}.')
@@ -300,5 +302,5 @@ def generate(individual, n_population=2, n_generation=10, logs=True):
 
             print('\n')
 
-    write(best, globals())
+    write(best, avg_scores, globals())
     return best, best_individuals

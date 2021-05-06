@@ -5,14 +5,15 @@ from re import match
 STATISTICS_PATH = './statistics/'
 
 
-def write(individual, _globals):
+def write(individual, statistics, _globals):
     keys = [key for key in _globals.keys() if not key.startswith('_')
             and match(r'^[A-Z_]*$', key)]
     now = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
     to_write = {
         'result': individual,
-        'datetime': now
+        'statistics': statistics,
+        'datetime': now,
     }
     for key in keys:
         to_write[key] = _globals.get(key)

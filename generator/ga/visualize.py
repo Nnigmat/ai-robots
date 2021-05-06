@@ -1,12 +1,29 @@
 from cairosvg import svg2png
 from hashlib import md5
 from PIL import Image
-from os import walk
+from os import walk, listdir
+from functools import reduce
+from operator import iconcat
+from glob import glob
+from functools import cmp_to_key
 
 VISUALIZATION_PATH = './visualization/'
+BESTS_PATH = VISUALIZATION_PATH + 'bests/'
+RESULTS_PATH = VISUALIZATION_PATH + 'results/'
 
 
-def visualize(individual, name=None):
+def compare(x, y):
+    if len(x) < len(y):
+        return -1
+    elif len(x) > len(y):
+        return 1
+
+    return -1 if x < y else 1
+
+
+def visualize(individual, name=None, path=None):
+    '''Creates .png and .svg files
+    '''
     out = '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" version="1.1">'
 
     for polyline in individual:
@@ -17,22 +34,37 @@ def visualize(individual, name=None):
     out += '</svg>'
 
     name = name if name else md5(out.encode()).hexdigest()
-    path = VISUALIZATION_PATH + name + '.png'
+    write_to = (path or (VISUALIZATION_PATH + name)) + '.png'
 
-    svg2png(bytestring=out.encode('utf-8'), write_to=path)
+    svg2png(bytestring=out.encode('utf-8'), write_to=write_to)
 
-    f = open(VISUALIZATION_PATH + name + '.svg', 'w')
+    f = open((path or (VISUALIZATION_PATH + name)) + '.svg', 'w')
     f.write(out)
     f.close()
 
 
-def visualize_generation(generation):
-    for i, individual in enumerate(generation):
-        visualize(individual, str(i))
+def visualize_generation(generation, generate_all=True):
+    if generate_all:
+        for i, individual in enumerate(generation):
+            visualize(individual, str(i + 1))
 
-    paths = sorted(list(walk(VISUALIZATION_PATH))[-1][-1])
-    imgs = [Image.open(f'{VISUALIZATION_PATH}/{path}')
-            for path in paths if path.endswith('.png')]
+    # Paths to .png files sorted in ascending order
+    paths = sorted(glob(VISUALIZATION_PATH + '/*.png'),
+                   key=cmp_to_key(compare))
 
-    imgs[0].save(f'{VISUALIZATION_PATH}/result.gif', save_all=True,
-                 append_images=imgs[1:], optimize=False, duration=100, loop=0)
+    imgs = [Image.open(path) for path in paths]
+
+    if len(imgs) > 0:
+        imgs[0].save(
+            f'{RESULTS_PATH}/result{len(listdir(RESULTS_PATH)) + 1}.gif',
+            save_all=True,
+            append_images=imgs[1:],
+            optimize=False,
+            duration=100,
+            loop=0
+        )
+
+
+def visualize_best(best):
+    filename = BESTS_PATH + 'best' + str(len(listdir(BESTS_PATH)) + 1)
+    visualize(best, path=filename)

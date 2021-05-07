@@ -5,5 +5,5 @@
 [node name="Brush" type="Spatial"]
 script = ExtResource( 1 )
 stroke_type = "Solid"
-stroke_width = 6.0
+stroke_base_width = 5.0
 stroke_flow = 0.1

@@ -3,7 +3,7 @@ extends Spatial
 signal pass_data()
 signal pass_image()
 
-export(String, 'Pixel', 'Line art') var ART_TYPE = 'Line art'
+export(String, 'Pixel', 'Line art', 'GA') var ART_TYPE = 'Line art'
 export var scale_factor = 1
 export var ON = true
 export var DEFAULT_COLOR = Color('#000')
@@ -19,7 +19,7 @@ func _on_Timer_timeout():
 		
 	var data = _get_data()
 	var res = _map_to_canvas(data)
-	
+
 	emit_signal("pass_data", res)
 	emit_signal("pass_image", 'res://other/output.svg')
 
@@ -27,7 +27,7 @@ func _instance_color_default(string):
 	if not string:
 		return DEFAULT_COLOR
 		
-	return Color(string)
+	return ColorN(string, 1.0)
 
 func _get_data():
 	var inp = []
@@ -37,7 +37,11 @@ func _get_data():
 	elif ART_TYPE == 'Pixel':
 	#	Width and height of image are passed after the image path
 		OS.execute('python3', [ProjectSettings.globalize_path("res://generator/image-to-polyline/image-to-polyline.py"), ProjectSettings.globalize_path('res://generator/input/lenna.png'), 512, 512], true, inp)
-	
+	elif ART_TYPE == 'GA':
+		var f = File.new()
+		f.open('/Users/n-nigmatullin/Code/ai-robots/generator/ga/statistics/2021-05-07_17:10:04.json', File.READ)
+		return JSON.parse(f.get_as_text()).get_result()['result']
+		
 	return JSON.parse(inp[0]).get_result()['data']
 
 func _map_to_canvas(data):
@@ -47,7 +51,7 @@ func _map_to_canvas(data):
 	var sin4 = sin(PI / 2)
 	var canvas_size = get_viewport().size.x
 	
-	if ART_TYPE == 'Line art':
+	if ART_TYPE == 'Line art' or ART_TYPE == 'GA':
 		for polyline in data:
 			res.append({
 				'points': [],

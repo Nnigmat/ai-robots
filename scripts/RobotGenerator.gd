@@ -8,6 +8,7 @@ export var ROBOTS_PER_ROW: int = 10
 export var STROKE_FLOW: float = 0.2
 export var ROBOT_SPEED: int = 4
 export(String, 'No avoidance', 'First attempt', 'Priority') var COLLISION_TYPE = Globals.NO_AVOIDANCE
+export(String, 'Order', 'Color') var DIVISION_TYPE = 'Order'
 
 var done_robots = 0
 var collisions = 0
@@ -41,6 +42,7 @@ func _ready():
 			robot.robots_amount = AMOUNT
 			robot.STEP = ROBOT_SPEED
 			robot.CANVAS_DIMS = [canvas.width, canvas.height]
+			robot.DIVISION_TYPE = DIVISION_TYPE
 			robot.id = i * ROBOTS_PER_ROW + j
 			robot.initial_position = Vector3(- i * 250, 3, j * 250)
 			robot.set_name('Robot ' + str(i))

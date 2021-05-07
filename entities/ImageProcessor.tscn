@@ -8,6 +8,7 @@ script = ExtResource( 1 )
 scale_factor = 2
 
 [node name="Timer" type="Timer" parent="."]
+wait_time = 2.0
 one_shot = true
 autostart = true
 

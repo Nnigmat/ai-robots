@@ -10,6 +10,7 @@ script = ExtResource( 1 )
 STROKE_FLOW = 0.04
 
 [node name="ImageProcessor" parent="." instance=ExtResource( 2 )]
+ART_TYPE = "GA"
 
 [node name="Info" type="CanvasLayer" parent="."]
 offset = Vector2( 520, 2 )

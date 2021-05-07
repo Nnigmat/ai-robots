@@ -20,6 +20,9 @@ export var PATH_LENGTH = 70
 export var RADIUS = 100
 export var ROBOT_RADIUS = 20
 
+# Как делить линии между роботами, второе значение 'Color'
+export var DIVISION_TYPE = 'Order'
+
 var current_delay: float = 0.0
 var polylines = []
 var polyline = []
@@ -34,6 +37,7 @@ var close_robots_changed = false
 var path = []
 var path_index = 0
 var freeze = false
+
 
 func hide():
 	visible = false
@@ -50,7 +54,7 @@ func _check_state():
 	if len(polylines) != 0 and len(polyline) == 0 and _near_target():
 		var tmp = polylines.pop_back()
 		polyline = tmp['points']
-		_change_brush_color(tmp['color'])
+		_change_brush(tmp['color'], tmp['width'])
 		polyline_start = true
 		_turn_off_brush()
 	
@@ -151,14 +155,26 @@ func _on_ImageProcessor_pass_data(data):
 		'color': null
 	}]
 	
-	for i in range(int(float(len(data)) / robots_amount * id), 
-		int(float(len(data)) / robots_amount * (id + 1))):
-		tmp.append(data[i])
+	if DIVISION_TYPE == 'Order':
+		for i in range(int(float(len(data)) / robots_amount * id), 
+			int(float(len(data)) / robots_amount * (id + 1))):
+			tmp.append(data[i])
 
+	elif DIVISION_TYPE == 'Color':
+		var colors = []
+		for polyline in data:
+			if not colors.has(polyline['color']):
+				colors.append(polyline['color'])
+				
+		var color = colors[id]
+		for polyline in data:
+			if polyline['color'] == color:
+				tmp.append(polyline)
+	
 	polylines = tmp
 
-func _change_brush_color(color):
-	$Brush.change_brush_color(color) 
+func _change_brush(color, width):
+	$Brush.change_brush(color, width) 
 
 func _turn_on_brush():
 	$Brush.turn_on()

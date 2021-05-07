@@ -66,6 +66,18 @@ POLYLINE_SMOOTHNESS = 150
 POLYLINE_SMOOTHNESS_MAX = 180
 POLYLINE_SMOOTHNESS_MIN = 0
 
+# Delta to change width of polyline
+WIDTH_SHIFT = 1
+
+WIDTH_MIN = 1
+WIDTH_MAX = 4
+
+# Probability to change polyline's width
+WIDTH_SHIFT_PROB = 0.5
+
+# Probability to increase width
+WIDTH_INCREASE_PROB = 0.5
+
 avg_scores = []
 
 
@@ -108,6 +120,12 @@ def generate_individual(individual):
     for polyline in individual:
         if random() < COLOR_SWITCH_PROB:
             polyline['color'] = choice(COLORS)
+
+        if random() < WIDTH_SHIFT_PROB:
+            if random() < WIDTH_INCREASE_PROB:
+                polyline['width'] = min(polyline['width'] + 1, WIDTH_MAX)
+            else:
+                polyline['width'] = max(polyline['width'] - 1, WIDTH_MIN)
 
         if len(polyline['points']) == 0:
             continue

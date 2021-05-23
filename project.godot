@@ -197,6 +197,10 @@ config/icon="res://icon.png"
 Globals="*res://scripts/Globals.gd"
 Motion="*res://scripts/Motion_old.gd"
 
+[global]
+
+sky=false
+
 [input]
 
 ui_left={
@@ -246,4 +250,5 @@ camera_right={
 
 [rendering]
 
+environment/default_clear_color=Color( 0.301961, 0.301961, 0.301961, 1 )
 environment/default_environment="res://default_env.tres"

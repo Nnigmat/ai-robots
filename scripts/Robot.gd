@@ -122,10 +122,19 @@ func _user_move():
 		else:
 			$Brush.turn_on()
 
+func _near(a, b, distance):
+	return abs(a.x - b.x) <= distance and abs(a.z - b.z) <= distance
 
 func _near_target():
+	var _robot_near_point = false
+	for _robot in close_robots:
+		if _near(_robot.direction, target, STEP * 5):
+			_robot_near_point = true
+		
+	if _robot_near_point:
+		return abs(direction.x - target.x) <= STEP * 5 and abs(direction.z - target.z) <= STEP * 5
+		
 	return abs(direction.x - target.x) <= STEP and abs(direction.z - target.z) <= STEP
-
 
 func _move():
 	var params = {

@@ -8,6 +8,7 @@ export var NO_AVOIDANCE: String = 'No avoidance'
 export var FIRST_ATTEMPT: String = 'First attempt'
 export var PRIORITY: String = 'Priority'
 export var BUG: String = 'Bug'
+export var BACKOFF: String = 'Backoff'
 
 
 export var SIZE = 1024

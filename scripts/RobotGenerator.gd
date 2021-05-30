@@ -7,7 +7,7 @@ export var AMOUNT: int = 4
 export var ROBOTS_PER_ROW: int = 10 
 export var STROKE_FLOW: float = 0.2
 export var ROBOT_SPEED: int = 4
-export(String, 'No avoidance', 'First attempt', 'Priority', 'Bug') var COLLISION_TYPE = Globals.NO_AVOIDANCE
+export(String, 'No avoidance', 'First attempt', 'Priority', 'Bug', 'Backoff') var COLLISION_TYPE = Globals.NO_AVOIDANCE
 export(String, 'Order', 'Color') var DIVISION_TYPE = 'Order'
 
 var done_robots = 0
@@ -16,6 +16,7 @@ var paints = 0
 var timer = 0
 var is_done = false
 var to_hide = true
+var robots = []
 
 func _ready():
 	$Info/Done.text = 'Done: ' + str(done_robots) + ' / ' + str(AMOUNT)
@@ -52,6 +53,7 @@ func _ready():
 			$ImageProcessor.connect("pass_data", robot, "_on_ImageProcessor_pass_data")
 	
 			add_child(robot)
+			robots.append(robot)
 
 
 func _on_robot_done():
@@ -112,3 +114,14 @@ func _to_mm_ss(seconds):
 
 func _on_Show_grid_Button_pressed():
 	get_node('/root/Game/Canvas').toggle_lines()
+
+
+func _on_Timer2_timeout():
+	var ids = []
+	for i in range(AMOUNT):
+		ids.append(i)
+		
+	ids.shuffle()
+	
+	for i in range(AMOUNT):
+		robots[i].id = ids[i]

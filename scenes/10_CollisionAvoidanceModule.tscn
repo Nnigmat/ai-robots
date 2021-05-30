@@ -24,10 +24,9 @@ show_lines = false
 [node name="MiniCamera" parent="." instance=ExtResource( 5 )]
 
 [node name="RobotGenerator" parent="." instance=ExtResource( 3 )]
+AMOUNT = 20
 ROBOTS_PER_ROW = 20
 STROKE_FLOW = 0.15
-COLLISION_TYPE = "Bug"
-DIVISION_TYPE = "Color"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 1 )

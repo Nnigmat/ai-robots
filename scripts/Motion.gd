@@ -8,6 +8,7 @@ export(float, 0, 10, 0.01) var stroke_width: float = 1
 export(Color, RGB) var stroke_color = Color(0.2, 0.2, 0.2)
 export(Mesh) var stroke_shape = PlaneMesh.new()
 var material = SpatialMaterial.new()
+var move_state = 0
 
 func move(params: Dictionary):
 	var robot = params.get('robot')
@@ -31,6 +32,8 @@ func move(params: Dictionary):
 		return priority(robot, speed, target, location, close_robots, width, height, close_robots_changed, path_length, radius, robot_radius)
 	elif type == Globals.BUG:
 		return bug(robot, close_robots, speed, target, location, robot_radius)
+	elif type == Globals.BACKOFF:
+		return backoff(robot, close_robots, speed, target, location)
 	else:
 		return Vector3(0, 0, 0)
 	
@@ -154,65 +157,89 @@ func point_inside_rect(point, a, b, c, d):
 	var rect_area = dist_between_p(a, b) * dist_between_p(b, c)
 	var triangles_area = triangle_area(point, a, b) + triangle_area(point, b, c) + triangle_area(point, c, d) + triangle_area(point, d, a)
 	
-	return abs(rect_area - triangles_area) < 0.001
+	return abs(rect_area - triangles_area) < 1
 	
 func triangle_area(a, b, c):
 	return abs(a.x * (b.z - c.z) + b.x * (c.z - a.z) + c.x * (a.z - b.z)) / 2
 
 func has_obstacle(robot, location, target, close_robots):
-	if location.x == target.x:
-		return false
+	location.y = 2
+	target.y = 2
 	
-	var a = (location.z - target.z) / (location.x - target.x)
-	var b_ort = location.z + a * location.x
-	var delta = Vector3(1, 0, -a).normalized() * 10
+	var 	lower = location
+	var upper = target
+	if location.z > target.z:
+		lower = target
+		upper = location
+
+	var v = upper - lower
+	var u = v.normalized()
 	
-	var has = false
-	var A = location + delta
-	var B = target + delta
-	var C = target - delta
-	var D = location - delta
+	var delta_ort
+	if upper.x == target.x:
+		delta_ort = Vector3(0, 0, 1) * 100
+	elif upper.z == target.z:
+		delta_ort = Vector3(1, 0, 0) * 100
+	else:
+		var a = (upper.z - lower.z) / (upper.x - lower.x) 
+		delta_ort = Vector3(1, 0, -1/a).normalized() * 100
+
+	# Delta along the line
+	var delta_along = u * 10
+	delta_along.y = 0
+	
+	
+	var A = lower + delta_ort - delta_along
+	var B = upper + delta_ort + delta_along
+	var C = upper - delta_ort + delta_along
+	var D = lower - delta_ort - delta_along
+	
+	A.y = 2
+	B.y = 2
+	C.y = 2
+	D.y = 2
+	print(A, B, C, D, location, target, close_robots[1].direction)
+	
 	for _robot in close_robots:
 		if _robot.id == robot.id:
 			continue 
-			
-		has = point_inside_rect(_robot.direction, A, B, C, D)
 		
-	return has
+		_robot.direction.y = 2
+		if not point_inside_rect(_robot.direction, A, B, C, D):
+			return false
+		
+	return true
+ 
 
 func move_along(robot, close_robots, speed, target, location, radius):
-	var a = (location.z - target.z) / (location.x - target.x)
-	var delta = Vector3(1, 0, a).normalized()
-	var delta_ort = Vector3(1, 0, -a).normalized()
-	
-	var shifts = [0, 0, 0, 0]
-	var shifts_values = [Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(-1, 0, 0), Vector3(0, 0, -1)]
+	var moves = []
+	if target.z > location.z:
+		moves = [Vector3(0, 0, speed), Vector3(speed, 0, 0), Vector3(0, 0, -speed), Vector3(-speed, 0, 0)]
+	else:
+		moves = [Vector3(0, 0, -speed), Vector3(speed, 0, 0), Vector3(0, 0, speed), Vector3(-speed, 0, 0)]
+		
 	for _robot in close_robots:
 		if _robot.id == robot.id:
-			continue 
+			continue
+		
+		if _robot.direction - location > moves[move_state].normalized() * radius * 3:
+			return moves[move_state]
+		elif _robot.direction - location > moves[(move_state + 1) % 4].normalized() * radius * 3:
+			move_state = (move_state + 1) % 4
+			return moves[move_state]
 			
-		var x = _robot.direction.x
-		var z = _robot.direction.z
 		
-		if near_target(location + Vector3(1, 0, 0), _robot.direction, radius * 3):
-			shifts[0] += 1
-		
-		if near_target(location + Vector3(-1, 0, 0), _robot.direction, radius * 3):
-			shifts[2] += 1
+#		elif _robot.direction - location > moves[(move_state - 1) % 4]:
+#			move_state = (move_state - 1) % 4
+#			return moves[move_state]
 			
-		if near_target(location + Vector3(0, 0, 1), _robot.direction, radius * 3):
-			shifts[1] += 1
-		
-		if near_target(location + Vector3(0, 0, -1), _robot.direction, radius * 3):
-			shifts[3] += 1
+	if move_state + 1 == 4:
+		move_state = 0
+	else:
+		move_state += 1
 	
-	var _max_index = -1
-	for i in range(4):
-		if shifts[i] > _max_index:
-			_max_index = i
+	return Vector3(0, 0, 0)
 	
-	return location + shifts_values[_max_index]
-
 func bug(robot, close_robots, speed, target, location, radius):
 	if len(close_robots) == 1:
 		return no_avoidance(speed, target, location)
@@ -224,3 +251,10 @@ func bug(robot, close_robots, speed, target, location, radius):
 		return no_avoidance(speed, target, location)
 
 	return move_along(robot, close_robots, speed, target, location, radius)
+	
+func backoff(robot, close_robots, speed, target, location):
+	if len(close_robots) == 1:
+		return no_avoidance(speed, target, location)
+
+	if not is_highest_priority(robot, close_robots):
+		return Vector3(0, 0, 0)

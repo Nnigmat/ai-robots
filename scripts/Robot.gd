@@ -17,8 +17,9 @@ export var INPUT_DELAY: float = 0.4
 export var COLLISION_TYPE: String = Globals.NO_AVOIDANCE
 export var CANVAS_DIMS = [Globals.SIZE, Globals.SIZE]
 export var PATH_LENGTH = 70
-export var RADIUS = 100
+export var RADIUS = 300
 export var ROBOT_RADIUS = 20
+export var DEFAULT_COLOR = Color('#000')
 
 # Как делить линии между роботами, второе значение 'Color'
 export var DIVISION_TYPE = 'Order'
@@ -78,6 +79,7 @@ func _check_state():
 
 func _ready():
 	material = SpatialMaterial.new()
+	material.albedo_color = DEFAULT_COLOR
 	set_material_override(material)
 	scale = Vector3(Globals.ROBOT_SIZE, Globals.ROBOT_SIZE, Globals.ROBOT_SIZE)
 	
@@ -192,7 +194,7 @@ func _turn_on_brush():
 	
 func _turn_off_brush():
 	$Brush.turn_off()
-	material.albedo_color = Color(1, 1, 1)
+	material.albedo_color = DEFAULT_COLOR
 
 
 func _on_Timer_timeout():

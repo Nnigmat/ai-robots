@@ -3,6 +3,7 @@ import os
 from PIL import Image
 import sys
 import json
+from time import time
 
 
 def rgb2hex(r, g, b):
@@ -35,6 +36,8 @@ if __name__ == '__main__':
 
     IM = IM.resize((width, height))
 
+    polylines = convert(IM)
+
     print(json.dumps({
-        'data': convert(IM)
+        'data': polylines
     }))
